@@ -1,7 +1,6 @@
-package com.olio.trainsembleapp
+package com.olio.trainsembleapp.cars
 
 import io.github.agrevster.pocketbaseKotlin.models.Record
-import io.github.agrevster.pocketbaseKotlin.models.utils.BaseModel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

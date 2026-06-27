@@ -1,7 +1,6 @@
-package com.olio.trainsembleapp
+package com.olio.trainsembleapp.cars
 
 import io.github.agrevster.pocketbaseKotlin.PocketbaseClient
-import io.github.agrevster.pocketbaseKotlin.models.utils.ListResult
 
 class CarsRepository(private val pbClient: PocketbaseClient) {
 
@@ -9,7 +8,6 @@ class CarsRepository(private val pbClient: PocketbaseClient) {
 
     suspend fun getCars(forceRefresh: Boolean = false): List<Car> {
         if (forceRefresh || cachedCars == null) {
-
                 cachedCars = pbClient.records.getFullList<Car>("cars", 10)
         }
         return cachedCars ?: emptyList()

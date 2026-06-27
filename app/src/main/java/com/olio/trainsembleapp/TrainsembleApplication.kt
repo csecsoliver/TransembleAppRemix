@@ -1,6 +1,7 @@
 package com.olio.trainsembleapp
 
 import android.app.Application
+import com.olio.trainsembleapp.cars.CarsRepository
 import io.github.agrevster.pocketbaseKotlin.PocketbaseClient
 import io.github.agrevster.pocketbaseKotlin.dsl.login
 import io.github.agrevster.pocketbaseKotlin.models.AuthRecord
@@ -10,6 +11,7 @@ import kotlinx.coroutines.launch
 
 class TrainsembleApplication : Application() {
     lateinit var pbClient: PocketbaseClient private set
+    lateinit var carsRepository: CarsRepository private set
     override fun onCreate() {
         super.onCreate()
 
@@ -24,7 +26,9 @@ class TrainsembleApplication : Application() {
                 "users", "REDACTED_EMAIL", "REDACTED_PASSWORD"
             ).token
             pbClient.login { token = tokent }
+            carsRepository = CarsRepository(pbClient)
         }
+
 
     }
 }

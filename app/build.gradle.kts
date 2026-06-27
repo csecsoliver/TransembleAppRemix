@@ -61,5 +61,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("io.github.agrevster:pocketbase-kotlin:2.7.4")
-
+    implementation("androidx.navigation3:navigation3-runtime:1.2.0-alpha04")
+    implementation("androidx.navigation3:navigation3-ui:1.2.0-alpha04")
 }
