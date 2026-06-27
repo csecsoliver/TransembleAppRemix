@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 
 class TrainsembleApplication : Application() {
     lateinit var pbClient: PocketbaseClient private set
+    lateinit var authRepository: AuthRepository private set
     lateinit var carsRepository: CarsRepository private set
     override fun onCreate() {
         super.onCreate()
@@ -21,12 +22,10 @@ class TrainsembleApplication : Application() {
             password = BuildConfig.PB_PASS
             host = "REDACTED_URL"
         })
+        authRepository = AuthRepository(pbClient)
+        carsRepository = CarsRepository(authRepository)
         MainScope().launch {
-            val tokent = pbClient.records.authWithPassword<AuthRecord>(
-                "users", "REDACTED_EMAIL", "REDACTED_PASSWORD"
-            ).token
-            pbClient.login { token = tokent }
-            carsRepository = CarsRepository(pbClient)
+            authRepository.authenticate()
         }
 
 

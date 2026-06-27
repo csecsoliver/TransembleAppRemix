@@ -12,15 +12,23 @@ class CarsViewModel(
 ) : ViewModel() {
 
     private val _cars = MutableStateFlow<List<Car>>(emptyList())
-    val cars: StateFlow<List<Car>> = _cars.asStateFlow()
+    private val _uiState = MutableStateFlow<CarsUiState>(CarsUiState.Loading())
+    val uiState = _uiState.asStateFlow()
 
     init {
         loadCars()
     }
 
-    private fun loadCars() {
+     fun loadCars() {
         viewModelScope.launch {
+            _uiState.value = CarsUiState.Loading("Loading cars...")
+            try {
                 _cars.value = repository.getCars()
+                _uiState.value = CarsUiState.Success(_cars.value)
+            } catch (e: Exception) {
+                _uiState.value = CarsUiState.Error(e)
+                _cars.value = emptyList()
+            }
         }
     }
 }
