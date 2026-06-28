@@ -7,11 +7,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.olio.trainsembleapp.cars.Car
@@ -31,6 +32,8 @@ import com.olio.trainsembleapp.cars.CarsRepository
 import com.olio.trainsembleapp.cars.CarsUiState
 import com.olio.trainsembleapp.cars.CarsViewModel
 import com.olio.trainsembleapp.ui.Screen
+import com.olio.trainsembleapp.ui.ScreenTab
+import com.olio.trainsembleapp.ui.screenTabs
 import com.olio.trainsembleapp.ui.theme.TrainsembleAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -43,15 +46,43 @@ class MainActivity : ComponentActivity() {
 
 
         setContent {
-            val backStack = remember { mutableStateListOf<Screen>(Screen.HOME) }
+            val backStack = remember { mutableStateListOf<ScreenTab>(ScreenTab.HOME) }
+            val currentTab = backStack.lastOrNull() as? ScreenTab ?: ScreenTab.HOME
             TrainsembleAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        NavigationBar() {
+                            screenTabs.forEach { entry ->
+                                NavigationBarItem(
+                                    selected = currentTab == entry,
+                                    icon = {
+                                        Icon(
+                                            entry.icon,
+                                            contentDescription = "Tab icon"
+                                        )
+                                    },
+                                    label = { Text(entry.title) },
+                                    onClick = {
+                                        if (currentTab != entry) {
+                                            backStack.clear()
+                                            backStack.add(ScreenTab.HOME)
+                                            if (entry != ScreenTab.HOME) {
+                                                backStack.add(entry)
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                ) { innerPadding ->
                     NavDisplay(
                         backStack = backStack,
                         onBack = { backStack.removeLastOrNull() },
                         entryProvider = entryProvider {
 
-                            entry<Screen.HOME> {
+                            entry<ScreenTab.HOME> {
 
                                 val authState by app.authRepository.isAuthenticated.collectAsStateWithLifecycle()
 
@@ -67,7 +98,7 @@ class MainActivity : ComponentActivity() {
                                     is AuthState.Authenticated -> {
                                         Button(
                                             onClick = dropUnlessResumed {
-                                                backStack.add(Screen.CARS)
+                                                backStack.add(ScreenTab.CARS)
                                             },
                                             modifier = Modifier
                                                 .padding(innerPadding)
@@ -87,7 +118,7 @@ class MainActivity : ComponentActivity() {
 
                             }
 
-                            entry<Screen.CARS> { route ->
+                            entry<ScreenTab.CARS> { route ->
                                 CarsScreen(
                                     repository = app.carsRepository,
                                     innerPadding = innerPadding
