@@ -24,11 +24,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.olio.trainsembleapp.cars.Car
 import com.olio.trainsembleapp.cars.CarsRepository
 import com.olio.trainsembleapp.cars.CarsUiState
 import com.olio.trainsembleapp.cars.CarsViewModel
+import com.olio.trainsembleapp.ui.Screen
 import com.olio.trainsembleapp.ui.theme.TrainsembleAppTheme
 
 private data object RouteA
@@ -45,16 +47,16 @@ class MainActivity : ComponentActivity() {
 
 
         setContent {
-            val backStack = remember { mutableStateListOf<Any>(RouteA) }
+            val backStack = remember { mutableStateListOf<Screen>(Screen.HOME) }
             TrainsembleAppTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    NavDisplay(
+                        backStack = backStack,
+                        onBack = { backStack.removeLastOrNull() },
+                        entryProvider = entryProvider {
 
-                NavDisplay(
-                    backStack = backStack,
-                    onBack = { backStack.removeLastOrNull() },
-                    entryProvider = { key ->
-                        when (key) {
-                            is RouteA -> NavEntry(key) {
-                                Scaffold( modifier = Modifier.fillMaxSize()) { innerPadding ->
+                            entry<Screen.HOME> {
+
                                     val authState by app.authRepository.isAuthenticated.collectAsStateWithLifecycle()
 
                                     when (val state = authState)  {
@@ -64,7 +66,7 @@ class MainActivity : ComponentActivity() {
                                         is AuthState.Authenticated -> {
                                             Button(
                                                 onClick = dropUnlessResumed {
-                                                    backStack.add(RouteB("123"))
+                                                    backStack.add(Screen.CARS)
                                                 },
                                                 modifier = Modifier
                                                     .padding(innerPadding)
@@ -77,23 +79,19 @@ class MainActivity : ComponentActivity() {
                                             Text("not authenticated", modifier = Modifier.padding(innerPadding))
                                         }
                                     }
-                                }
 
                             }
 
-                            is RouteB -> NavEntry(key) {
-                                Scaffold( modifier = Modifier.fillMaxSize()) { innerPadding ->
-                                    CarsScreen(repository = app.carsRepository, innerPadding = innerPadding)
-                                }
-                            }
-
-                            else -> {
-                                error("Unknown route: $key")
+                            // 3. Register RouteB. You get the typed 'route' object for free!
+                            entry<Screen.CARS> { route ->
+                                CarsScreen(
+                                    repository = app.carsRepository,
+                                    innerPadding = innerPadding
+                                )
                             }
                         }
-                    }
-                )
-
+                    )
+                }
             }
 
         }
