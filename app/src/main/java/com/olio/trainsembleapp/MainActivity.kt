@@ -33,10 +33,6 @@ import com.olio.trainsembleapp.cars.CarsViewModel
 import com.olio.trainsembleapp.ui.Screen
 import com.olio.trainsembleapp.ui.theme.TrainsembleAppTheme
 
-private data object RouteA
-
-private data class RouteB(val id: String)
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,32 +53,40 @@ class MainActivity : ComponentActivity() {
 
                             entry<Screen.HOME> {
 
-                                    val authState by app.authRepository.isAuthenticated.collectAsStateWithLifecycle()
+                                val authState by app.authRepository.isAuthenticated.collectAsStateWithLifecycle()
 
-                                    when (val state = authState)  {
-                                        is AuthState.Authenticating -> {
-                                            CircularProgressIndicator(modifier = Modifier.padding(innerPadding))
-                                        }
-                                        is AuthState.Authenticated -> {
-                                            Button(
-                                                onClick = dropUnlessResumed {
-                                                    backStack.add(Screen.CARS)
-                                                },
-                                                modifier = Modifier
-                                                    .padding(innerPadding)
-                                                    .padding(horizontal = 16.dp),
-                                            ) {
-                                                Text("Click to navigate")
-                                            }
-                                        }
-                                        is AuthState.NotAuthenticated -> {
-                                            Text("not authenticated", modifier = Modifier.padding(innerPadding))
+                                when (val state = authState) {
+                                    is AuthState.Authenticating -> {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.padding(
+                                                innerPadding
+                                            )
+                                        )
+                                    }
+
+                                    is AuthState.Authenticated -> {
+                                        Button(
+                                            onClick = dropUnlessResumed {
+                                                backStack.add(Screen.CARS)
+                                            },
+                                            modifier = Modifier
+                                                .padding(innerPadding)
+                                                .padding(horizontal = 16.dp),
+                                        ) {
+                                            Text("Click to navigate")
                                         }
                                     }
 
+                                    is AuthState.NotAuthenticated -> {
+                                        Text(
+                                            "not authenticated",
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    }
+                                }
+
                             }
 
-                            // 3. Register RouteB. You get the typed 'route' object for free!
                             entry<Screen.CARS> { route ->
                                 CarsScreen(
                                     repository = app.carsRepository,
@@ -107,9 +111,14 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues) {
         is CarsUiState.Loading -> {
             CircularProgressIndicator(modifier = Modifier.padding(innerPadding))
         }
+
         is CarsUiState.Error -> {
-            Text(text = "Error: ${state.exception.message}", modifier = Modifier.padding(innerPadding))
+            Text(
+                text = "Error: ${state.exception.message}",
+                modifier = Modifier.padding(innerPadding)
+            )
         }
+
         is CarsUiState.Success -> {
             CarList(cars = state.data, innerPadding)
         }
