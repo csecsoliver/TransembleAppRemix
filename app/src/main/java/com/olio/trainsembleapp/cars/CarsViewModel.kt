@@ -31,4 +31,29 @@ class CarsViewModel(
             }
         }
     }
+    fun deleteCar(id: String) {
+        viewModelScope.launch {
+            _uiState.value = CarsUiState.Loading("Deleting...")
+            try {
+                if (repository.deleteCarById(id)) {
+                    loadCars()
+                } else {
+                    _uiState.value = CarsUiState.Error(Exception("Failed to delete"))
+                }
+            } catch (e: Exception) {
+                _uiState.value = CarsUiState.Error(e)
+            }
+        }
+    }
+    fun editCar(id: String, entry: CarDto) {
+        viewModelScope.launch {
+            _uiState.value = CarsUiState.Loading("Saving...")
+            try {
+                repository.editCar(id, entry)
+                loadCars()
+            } catch (e: Exception) {
+                _uiState.value = CarsUiState.Error(e)
+            }
+        }
+    }
 }

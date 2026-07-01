@@ -8,10 +8,22 @@ import kotlinx.serialization.Serializable
 data class Car(
     @SerialName("UIC")
     val uic: String,
-    val agency: String, // e.g., Locomotive, Freight, Passenger, Tanker
+    val agency: String,
     val type: String,
     val nick: String?,
     val vagonweb: String,
     val created: String,
     val updated: String,
-) : Record()
+) : Record() {
+
+}
+
+@Serializable
+data class CarDto (
+    @SerialName("UIC")
+    val uic: String,
+    val agency: String,
+    val type: String,
+    val nick: String?,
+    val vagonweb: String,
+)
