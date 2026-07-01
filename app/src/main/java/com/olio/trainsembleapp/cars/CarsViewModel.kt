@@ -19,11 +19,11 @@ class CarsViewModel(
         loadCars()
     }
 
-     fun loadCars() {
+     fun loadCars(reload: Boolean = false) {
         viewModelScope.launch {
             _uiState.value = CarsUiState.Loading("Loading cars...")
             try {
-                _cars.value = repository.getCars()
+                _cars.value = repository.getCars(reload)
                 _uiState.value = CarsUiState.Success(_cars.value)
             } catch (e: Exception) {
                 _uiState.value = CarsUiState.Error(e)
@@ -49,8 +49,8 @@ class CarsViewModel(
         viewModelScope.launch {
             _uiState.value = CarsUiState.Loading("Saving...")
             try {
-                repository.editCar(id, entry)
-                loadCars()
+                val edited = repository.editCar(id, entry)
+                loadCars(true)
             } catch (e: Exception) {
                 _uiState.value = CarsUiState.Error(e)
             }

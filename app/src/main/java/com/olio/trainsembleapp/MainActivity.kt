@@ -29,6 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -154,7 +155,9 @@ class MainActivity : ComponentActivity() {
 fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues) {
     val viewModel = viewModel { CarsViewModel(repository) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    viewModel.loadCars()
+    LaunchedEffect(Unit) {
+        viewModel.loadCars()
+    }
     when (val state = uiState) {
         is CarsUiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -188,11 +191,11 @@ fun CarList(viewModel: CarsViewModel, cars: List<Car>, innerPadding: PaddingValu
             },
             onSave = { fields ->
                 val entry = CarDto(
-                        uic = car.uic,
-                agency = car.agency,
-                type = car.type,
-                nick = car.nick,
-                vagonweb = car.vagonweb,
+                    uic = fields["uic"]!!,
+                    agency = fields["agency"]!!,
+                    type = fields["type"]!!,
+                    nick = fields["nick"]!!,
+                    vagonweb = fields["vagonweb"]!!,
                 )
                 viewModel.editCar(car.id!!, entry)
             },
@@ -298,7 +301,7 @@ fun EditDialog(
 fun statesToString(inputStates: Map<String, TextFieldState>): Map<String, String> {
     val mut = mutableMapOf<String, String>()
     for (i in inputStates) {
-        mut[i.key] = i.value.toString()
+        mut[i.key] = i.value.text.toString()
     }
     return mut.toImmutableMap()
 }
