@@ -6,12 +6,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlexBox
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,8 +21,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.NavigationBar
@@ -200,7 +205,7 @@ fun CarList(viewModel: CarsViewModel, cars: List<Car>, innerPadding: PaddingValu
                 viewModel.editCar(car.id!!, entry)
             },
             onDelete = { fields ->
-
+                viewModel.deleteCar(car.id!!)
             },
             fields = mapOf(
                 Pair("id", car.id!!),
@@ -255,60 +260,67 @@ fun EditDialog(
     val inputStates = remember {stringToStates(fields)}
 
     Dialog(
-        onDismissRequest = {onDismiss()},
-
+        onDismissRequest = onDismiss,
     ) {
         Card(
-
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ){
-                Text(title)
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall
+                )
                 for (state in inputStates) {
                     OutlinedTextField(
                         state = state.value,
                         label = {
                             Text(state.key)
-                        }
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
-                Row() {
-                    Button(
-                        onClick = { onDelete(statesToString(inputStates)) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                ) {
+                    TextButton(
+                        onClick = { onDelete(statesToString(inputStates)) },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
                     ) {
                         Text("Delete")
                     }
-                    Row() {
-                        Button(
-                            onClick = { onDismiss() }
-                        ) {
-                            Text("Dismiss")
-                        }
-                        Button(
-                            onClick = { onSave(statesToString(inputStates)) }
-                        ) {
-                            Text("Save")
-                        }
+                    TextButton(
+                        onClick = onDismiss
+                    ) {
+                        Text("Dismiss")
+                    }
+                    Button(
+                        onClick = { onSave(statesToString(inputStates)) }
+                    ) {
+                        Text("Save")
                     }
                 }
             }
-
-
         }
     }
 }
 fun statesToString(inputStates: Map<String, TextFieldState>): Map<String, String> {
     val mut = mutableMapOf<String, String>()
     for (i in inputStates) {
-        mut[i.key] = i.value.text.toString()
+        if (i.key != "id")
+            mut[i.key] = i.value.text.toString()
     }
     return mut.toImmutableMap()
 }
 fun stringToStates(fields: Map<String, String>):  Map<String, TextFieldState> {
     val mut = mutableMapOf<String, TextFieldState>()
     for (i in fields) {
-        mut[i.key] = TextFieldState(i.value)
+        if (i.key != "id")
+            mut[i.key] = TextFieldState(i.value)
     }
     return mut.toImmutableMap()
 }
