@@ -25,7 +25,7 @@ fun EditDialog(
     title: String,
     onDismiss: () -> Unit,
     onSave: ()->Unit,
-    onDelete: ()-> Unit,
+    onDelete: (()-> Unit)?,
     fields: List<FormField>
 ) {
 
@@ -49,14 +49,15 @@ fun EditDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
-                    TextButton(
-                        onClick = onDelete,
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text("Delete")
-                    }
+                    if (onDelete != null)
+                        TextButton(
+                            onClick = onDelete,
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Delete")
+                        }
                     TextButton(
                         onClick = onDismiss
                     ) {
@@ -71,20 +72,4 @@ fun EditDialog(
             }
         }
     }
-}
-fun statesToString(inputStates: Map<String, TextFieldState>): Map<String, String> {
-    val mut = mutableMapOf<String, String>()
-    for (i in inputStates) {
-        if (i.key != "id")
-            mut[i.key] = i.value.text.toString()
-    }
-    return mut.toMap()
-}
-fun stringToStates(fields: Map<String, String>):  Map<String, TextFieldState> {
-    val mut = mutableMapOf<String, TextFieldState>()
-    for (i in fields) {
-        if (i.key != "id")
-            mut[i.key] = TextFieldState(i.value)
-    }
-    return mut.toMap()
 }

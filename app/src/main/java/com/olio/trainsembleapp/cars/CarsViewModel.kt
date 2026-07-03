@@ -56,4 +56,15 @@ class CarsViewModel(
             }
         }
     }
+    fun createCar(entry: CarDto) {
+        viewModelScope.launch {
+            _uiState.value = CarsUiState.Loading("Saving...")
+            try {
+                val edited = repository.createCar(entry)
+                loadCars(true)
+            } catch (e: Exception) {
+                _uiState.value = CarsUiState.Error(e)
+            }
+        }
+    }
 }

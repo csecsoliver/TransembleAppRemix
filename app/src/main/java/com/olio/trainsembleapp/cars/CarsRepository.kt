@@ -23,9 +23,12 @@ class CarsRepository(private val authRepository: AuthRepository){
         return getCars().find { it.id == id }
     }
     suspend fun deleteCarById(id: String): Boolean {
-        return pbClient.records.delete("cars", id);
+        return pbClient.records.delete("cars", id)
     }
     suspend fun editCar(id: String, entry: CarDto): Car {
         return pbClient.records.update<Car>("cars", id, Json.encodeToString(entry))
+    }
+    suspend fun createCar(entry: CarDto): Car {
+        return pbClient.records.create<Car>("cars", Json.encodeToString(entry))
     }
 }

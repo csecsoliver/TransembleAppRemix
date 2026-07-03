@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -43,13 +44,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             val backStack = remember { mutableStateListOf<ScreenTab>(ScreenTab.HOME) }
             val currentTab = backStack.lastOrNull() ?: ScreenTab.HOME
+            val createDialogOpen = remember { mutableStateOf(false) }
             TrainsembleAppTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     floatingActionButton = {
                         if (currentTab == ScreenTab.CARS) {
+
                             FloatingActionButton(
-                                onClick = { /* TODO */ }
+                                onClick = {
+                                    createDialogOpen.value = true
+
+                                }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
@@ -129,7 +135,9 @@ class MainActivity : ComponentActivity() {
                             entry<ScreenTab.CARS> {
                                 CarsScreen(
                                     repository = app.carsRepository,
-                                    innerPadding = innerPadding
+                                    innerPadding = innerPadding,
+                                    createDialogOpen = createDialogOpen.value,
+                                    onCreateDialogClose = { createDialogOpen.value = false }
                                 )
                             }
                         }

@@ -22,12 +22,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.olio.trainsembleapp.ui.EditDialog
-import com.olio.trainsembleapp.ui.FormField
 import com.olio.trainsembleapp.ui.TextFormField
 import com.olio.trainsembleapp.ui.TextFormFieldWithImage
 
 @Composable
-fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues) {
+fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDialogOpen: Boolean, onCreateDialogClose: ()->Unit) {
     val viewModel = viewModel { CarsViewModel(repository) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -51,20 +50,77 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues) {
 
         is CarsUiState.Success -> {
 
-            val dialogOpen = remember { mutableStateOf<Car?>(null) }
-            if (dialogOpen.value != null) {
-                val carId = remember { dialogOpen.value!!.id!! }
-                val carEditState = remember { mutableStateOf<CarDto>(dialogOpen.value!!.toDto()) }
-                EditDialog(carId,
+            val editDialogOpen = remember { mutableStateOf<Car?>(null) }
+            if (createDialogOpen) {
+                val carCreateState = remember { mutableStateOf(CarDto(
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                )) }
+                EditDialog(
+                    title = "Create car",
                     onDismiss = {
-                        dialogOpen.value = null
+                        onCreateDialogClose()
                     },
                     onSave = {
-
+                        viewModel.createCar(carCreateState.value)
+                        onCreateDialogClose()
+                    },
+                    onDelete = null,
+                    fields = listOf(
+                        TextFormField(
+                            "UIC",
+                            carCreateState.value.uic,
+                            {
+                                carCreateState.value = carCreateState.value.copy(uic = it)
+                            }
+                        ),
+                        TextFormField(
+                            "Agency",
+                            carCreateState.value.agency,
+                            {
+                                carCreateState.value = carCreateState.value.copy(agency = it)
+                            }
+                        ),
+                        TextFormField(
+                            "Type",
+                            carCreateState.value.type,
+                            {
+                                carCreateState.value = carCreateState.value.copy(type = it)
+                            }
+                        ),
+                        TextFormField(
+                            "Nickname",
+                            carCreateState.value.nick?:"",
+                            {
+                                carCreateState.value = carCreateState.value.copy(nick = it)
+                            }
+                        ),
+                        TextFormFieldWithImage(
+                            "vagonweb",
+                            carCreateState.value.vagonweb,
+                            {
+                                carCreateState.value = carCreateState.value.copy(vagonweb = it)
+                            }
+                        ),
+                    )
+                )
+            } else if (editDialogOpen.value != null) {
+                val carId = remember { editDialogOpen.value!!.id!! }
+                val carEditState = remember { mutableStateOf<CarDto>(editDialogOpen.value!!.toDto()) }
+                EditDialog(carId,
+                    onDismiss = {
+                        editDialogOpen.value = null
+                    },
+                    onSave = {
                         viewModel.editCar(carId, carEditState.value)
+                        editDialogOpen.value = null
                     },
                     onDelete = {
                         viewModel.deleteCar(carId)
+                        editDialogOpen.value = null
                     },
                     fields = listOf(
                         TextFormField(
@@ -111,7 +167,7 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues) {
                 state.data,
                 innerPadding,
                 onSelect = {
-                    dialogOpen.value = it
+                    editDialogOpen.value = it
                 }
             )
         }
