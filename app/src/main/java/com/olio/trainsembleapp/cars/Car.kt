@@ -27,3 +27,11 @@ data class CarDto (
     val nick: String?,
     val vagonweb: String,
 )
+
+fun Car.toDto() = CarDto(
+    uic = uic,
+    agency = agency,
+    type = type,
+    nick = nick,
+    vagonweb = vagonweb,
+)

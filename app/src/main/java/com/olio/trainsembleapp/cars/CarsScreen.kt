@@ -22,6 +22,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.olio.trainsembleapp.ui.EditDialog
+import com.olio.trainsembleapp.ui.FormField
+import com.olio.trainsembleapp.ui.TextFormField
 
 @Composable
 fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues) {
@@ -47,43 +49,80 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues) {
         }
 
         is CarsUiState.Success -> {
-            CarList(viewModel, state.data, innerPadding)
+
+            val dialogOpen = remember { mutableStateOf<Car?>(null) }
+            if (dialogOpen.value != null) {
+                val carId = remember { dialogOpen.value!!.id!! }
+                val carEditState = remember { mutableStateOf<CarDto>(dialogOpen.value!!.toDto()) }
+                EditDialog(carId,
+                    onDismiss = {
+                        dialogOpen.value = null
+                    },
+                    onSave = {
+
+                        viewModel.editCar(carId, carEditState.value)
+                    },
+                    onDelete = {
+                        viewModel.deleteCar(carId)
+                    },
+                    fields = listOf(
+                        TextFormField(
+                            "UIC",
+                            carEditState.value.uic,
+                            {
+                                carEditState.value = carEditState.value.copy(uic = it)
+                            }
+                        ),
+                        TextFormField(
+                            "Agency",
+                            carEditState.value.agency,
+                            {
+                                carEditState.value = carEditState.value.copy(agency = it)
+                            }
+                        ),
+                        TextFormField(
+                            "Type",
+                            carEditState.value.type,
+                            {
+                                carEditState.value = carEditState.value.copy(type = it)
+                            }
+                        ),
+                        TextFormField(
+                            "Nickname",
+                            carEditState.value.nick?:"",
+                            {
+                                carEditState.value = carEditState.value.copy(nick = it)
+                            }
+                        ),
+                        TextFormField(
+                            "vagonweb",
+                            carEditState.value.vagonweb,
+                            {
+                                carEditState.value = carEditState.value.copy(vagonweb = it)
+                            }
+                        ),
+                    )
+                )
+            }
+
+
+            CarList(
+                state.data,
+                innerPadding,
+                onSelect = {
+                    dialogOpen.value = it
+                }
+            )
         }
     }
 }
 
 @Composable
-fun CarList(viewModel: CarsViewModel, cars: List<Car>, innerPadding: PaddingValues) {
-    val dialogOpen = remember { mutableStateOf<Car?>(null) }
-    if (dialogOpen.value != null) {
-        val car = dialogOpen.value!!
-        EditDialog(dialogOpen.value!!.id!!,
-            onDismiss = {
-                dialogOpen.value = null
-            },
-            onSave = { fields ->
-                val entry = CarDto(
-                    uic = fields["uic"]!!,
-                    agency = fields["agency"]!!,
-                    type = fields["type"]!!,
-                    nick = fields["nick"]!!,
-                    vagonweb = fields["vagonweb"]!!,
-                )
-                viewModel.editCar(car.id!!, entry)
-            },
-            onDelete = { fields ->
-                viewModel.deleteCar(car.id!!)
-            },
-            fields = mapOf(
-                Pair("id", car.id!!),
-                Pair("uic", car.uic),
-                Pair("agency", car.agency),
-                Pair("type", car.type),
-                Pair("nick", car.nick?:""),
-                Pair("vagonweb", car.vagonweb)
-            ),
-        )
-    }
+fun CarList(
+    cars: List<Car>, innerPadding: PaddingValues,
+    onSelect: (Car) -> Unit,
+    ) {
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -108,7 +147,7 @@ fun CarList(viewModel: CarsViewModel, cars: List<Car>, innerPadding: PaddingValu
                     AsyncImage(model = car.vagonweb, contentDescription = car.vagonweb)
                 },
                 modifier = Modifier.clickable {
-                    dialogOpen.value = car
+                    onSelect(car)
                 }
 
 

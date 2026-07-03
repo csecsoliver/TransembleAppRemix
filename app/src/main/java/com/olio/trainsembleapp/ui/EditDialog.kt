@@ -22,12 +22,12 @@ import androidx.compose.ui.window.Dialog
 
 @Composable
 fun EditDialog(
-    title: String, onDismiss: () -> Unit,
-    onSave: (fields: Map<String, String>)->Unit,
-    onDelete: (fields: Map<String, String>)-> Unit,
-    fields: Map<String, String>
+    title: String,
+    onDismiss: () -> Unit,
+    onSave: ()->Unit,
+    onDelete: ()-> Unit,
+    fields: List<FormField>
 ) {
-    val inputStates = remember {stringToStates(fields)}
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -42,21 +42,15 @@ fun EditDialog(
                     text = title,
                     style = MaterialTheme.typography.headlineSmall
                 )
-                for (state in inputStates) {
-                    OutlinedTextField(
-                        state = state.value,
-                        label = {
-                            Text(state.key)
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                for (i in fields) {
+                    i.Render()
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
                     TextButton(
-                        onClick = { onDelete(statesToString(inputStates)) },
+                        onClick = onDelete,
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.error
                         )
@@ -69,7 +63,7 @@ fun EditDialog(
                         Text("Dismiss")
                     }
                     Button(
-                        onClick = { onSave(statesToString(inputStates)) }
+                        onClick = onSave
                     ) {
                         Text("Save")
                     }
