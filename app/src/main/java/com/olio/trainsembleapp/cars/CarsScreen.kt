@@ -24,6 +24,7 @@ import coil.compose.AsyncImage
 import com.olio.trainsembleapp.ui.EditDialog
 import com.olio.trainsembleapp.ui.FormField
 import com.olio.trainsembleapp.ui.TextFormField
+import com.olio.trainsembleapp.ui.TextFormFieldWithImage
 
 @Composable
 fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues) {
@@ -94,7 +95,7 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues) {
                                 carEditState.value = carEditState.value.copy(nick = it)
                             }
                         ),
-                        TextFormField(
+                        TextFormFieldWithImage(
                             "vagonweb",
                             carEditState.value.vagonweb,
                             {

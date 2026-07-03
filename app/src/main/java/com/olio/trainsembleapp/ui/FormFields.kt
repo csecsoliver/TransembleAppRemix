@@ -6,6 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import coil.compose.AsyncImage
 
 interface FormField {
     val label: String
@@ -31,5 +32,27 @@ class TextFormField(
             isError = !isValid,
             modifier = modifier.fillMaxWidth()
         )
+    }
+}
+
+
+class TextFormFieldWithImage(
+    override val label: String,
+    val textValue: String,
+    val onChange: (String) -> Unit,
+    val validator: (String) -> Boolean = {it.isNotBlank()}
+): FormField {
+    override val isValid: Boolean get() = validator(textValue)
+
+    @Composable
+    override fun Render(modifier: Modifier) {
+        OutlinedTextField(
+            value = textValue,
+            onValueChange = onChange,
+            label = { Text(label) },
+            isError = !isValid,
+            modifier = modifier.fillMaxWidth()
+        )
+        AsyncImage(model = textValue, contentDescription = textValue)
     }
 }
