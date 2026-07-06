@@ -9,13 +9,6 @@ import androidx.compose.material.icons.filled.Train
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 
-sealed class Screen {
-    data object HOME : Screen()
-    data object CARS : Screen()
-    data object ROUTES : Screen()
-    data object STATIONS : Screen()
-    data class SIGHTINGS(val routeId: String?) : Screen()
-}
 sealed interface ScreenTab : NavKey {
     val title: String
     val icon: ImageVector
@@ -40,4 +33,4 @@ sealed interface ScreenTab : NavKey {
         override val icon = Icons.Default.CameraAlt
     }
 }
-val screenTabs = listOf<ScreenTab>(ScreenTab.HOME, ScreenTab.CARS)
+val screenTabs = listOf<ScreenTab>(ScreenTab.HOME, ScreenTab.CARS, ScreenTab.STATIONS)

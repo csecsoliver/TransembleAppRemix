@@ -21,19 +21,22 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.olio.trainsembleapp.generic.GenericList
+import com.olio.trainsembleapp.generic.GenericViewModel
+import com.olio.trainsembleapp.generic.UiState
 import com.olio.trainsembleapp.ui.EditDialog
 import com.olio.trainsembleapp.ui.TextFormField
 import com.olio.trainsembleapp.ui.TextFormFieldWithImage
 
 @Composable
 fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDialogOpen: Boolean, onCreateDialogClose: ()->Unit) {
-    val viewModel = viewModel { CarsViewModel(repository) }
+    val viewModel = viewModel { GenericViewModel<Car, CarDto>(repository) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
-        viewModel.loadCars()
+        viewModel.loadItems()
     }
     when (val state = uiState) {
-        is CarsUiState.Loading -> {
+        is UiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
                 CircularProgressIndicator(modifier = Modifier.padding(innerPadding))
@@ -41,14 +44,14 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
             }
         }
 
-        is CarsUiState.Error -> {
+        is UiState.Error -> {
             Text(
                 text = "Error: ${state.exception.message}",
                 modifier = Modifier.padding(innerPadding)
             )
         }
 
-        is CarsUiState.Success -> {
+        is UiState.Success -> {
 
             val editDialogOpen = remember { mutableStateOf<Car?>(null) }
             if (createDialogOpen) {
@@ -65,7 +68,7 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
                         onCreateDialogClose()
                     },
                     onSave = {
-                        viewModel.createCar(carCreateState.value)
+                        viewModel.createItem(carCreateState.value)
                         onCreateDialogClose()
                     },
                     onDelete = null,
@@ -115,11 +118,11 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
                         editDialogOpen.value = null
                     },
                     onSave = {
-                        viewModel.editCar(carId, carEditState.value)
+                        viewModel.editItem(carId, carEditState.value)
                         editDialogOpen.value = null
                     },
                     onDelete = {
-                        viewModel.deleteCar(carId)
+                        viewModel.deleteItem(carId)
                         editDialogOpen.value = null
                     },
                     fields = listOf(
@@ -163,53 +166,24 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
             }
 
 
-            CarList(
+            GenericList(
                 state.data,
                 innerPadding,
                 onSelect = {
                     editDialogOpen.value = it
-                }
-            )
-        }
-    }
-}
-
-@Composable
-fun CarList(
-    cars: List<Car>, innerPadding: PaddingValues,
-    onSelect: (Car) -> Unit,
-    ) {
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
-            .padding(horizontal = 16.dp),
-    ) {
-
-        items(
-            items = cars,
-            key = {car ->
-                car.id ?: car.uic
-            }
-        ) { car ->
-            ListItem(
+                },
+                getId = { it.id?:it.uic },
                 headlineContent = {
-                    Text(car.uic)
+                    Text(it.uic)
                 },
                 overlineContent = {
-                    Text("${  car.type } ${car.nick}" )
+                    Text("${  it.type } ${it.nick}" )
                 },
                 supportingContent = {
-                    AsyncImage(model = car.vagonweb, contentDescription = car.vagonweb)
+                    AsyncImage(model = it.vagonweb, contentDescription = it.vagonweb)
                 },
-                modifier = Modifier.clickable {
-                    onSelect(car)
-                }
-
-
             )
-
         }
     }
 }
+

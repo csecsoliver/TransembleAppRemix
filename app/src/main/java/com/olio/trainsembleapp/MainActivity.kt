@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.olio.trainsembleapp.cars.CarsScreen
+import com.olio.trainsembleapp.stations.StationsScreen
 import com.olio.trainsembleapp.ui.ScreenTab
 import com.olio.trainsembleapp.ui.screenTabs
 import com.olio.trainsembleapp.ui.theme.TrainsembleAppTheme
@@ -59,7 +60,7 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
-                                    contentDescription = "Add car"
+                                    contentDescription = "Add"
                                 )
                             }
                         }
@@ -79,6 +80,7 @@ class MainActivity : ComponentActivity() {
                                     label = { Text(entry.title) },
                                     onClick = {
                                         if (currentTab != entry) {
+                                            app
                                             backStack.clear()
                                             backStack.add(ScreenTab.HOME)
                                             if (entry != ScreenTab.HOME) {
@@ -135,6 +137,15 @@ class MainActivity : ComponentActivity() {
                             entry<ScreenTab.CARS> {
                                 CarsScreen(
                                     repository = app.carsRepository,
+                                    innerPadding = innerPadding,
+                                    createDialogOpen = createDialogOpen.value,
+                                    onCreateDialogClose = { createDialogOpen.value = false }
+                                )
+                            }
+
+                            entry<ScreenTab.STATIONS> {
+                                StationsScreen(
+                                    repository = app.stationsRepository,
                                     innerPadding = innerPadding,
                                     createDialogOpen = createDialogOpen.value,
                                     onCreateDialogClose = { createDialogOpen.value = false }

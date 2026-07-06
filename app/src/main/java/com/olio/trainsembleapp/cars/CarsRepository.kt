@@ -2,14 +2,15 @@ package com.olio.trainsembleapp.cars
 
 import com.olio.trainsembleapp.AuthRepository
 import com.olio.trainsembleapp.AuthState
+import com.olio.trainsembleapp.generic.GenericRepository
 import io.github.agrevster.pocketbaseKotlin.PocketbaseClient
 import kotlinx.serialization.json.Json
 
-class CarsRepository(private val authRepository: AuthRepository){
+class CarsRepository(private val authRepository: AuthRepository): GenericRepository<Car, CarDto>{
     private val pbClient: PocketbaseClient = authRepository.pbClient
     private var cachedCars: List<Car>? = null
 
-    suspend fun getCars(forceRefresh: Boolean = false): List<Car> {
+    override suspend fun getItems(forceRefresh: Boolean): List<Car> {
         if (authRepository.isAuthenticated.value is AuthState.NotAuthenticated) {
             throw IllegalStateException("Not authenticated")
         }
@@ -19,16 +20,16 @@ class CarsRepository(private val authRepository: AuthRepository){
         return cachedCars ?: emptyList()
     }
 
-    suspend fun getCarById(id: String): Car? {
-        return getCars().find { it.id == id }
+    override suspend fun getItemById(id: String): Car? {
+        return getItems().find { it.id == id }
     }
-    suspend fun deleteCarById(id: String): Boolean {
+    override suspend fun deleteItemById(id: String): Boolean {
         return pbClient.records.delete("cars", id)
     }
-    suspend fun editCar(id: String, entry: CarDto): Car {
+    override suspend fun editItem(id: String, entry: CarDto): Car {
         return pbClient.records.update<Car>("cars", id, Json.encodeToString(entry))
     }
-    suspend fun createCar(entry: CarDto): Car {
+    override suspend fun createItem(entry: CarDto): Car {
         return pbClient.records.create<Car>("cars", Json.encodeToString(entry))
     }
 }
