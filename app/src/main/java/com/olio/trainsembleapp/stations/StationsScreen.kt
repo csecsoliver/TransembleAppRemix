@@ -22,7 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.olio.trainsembleapp.generic.GenericList
-import com.olio.trainsembleapp.generic.GenericViewModel
+import com.olio.trainsembleapp.generic.StationsViewModel
 import com.olio.trainsembleapp.generic.UiState
 import com.olio.trainsembleapp.ui.EditDialog
 import com.olio.trainsembleapp.ui.TextFormField
@@ -30,7 +30,7 @@ import com.olio.trainsembleapp.ui.TextFormFieldWithImage
 
 @Composable
 fun StationsScreen(repository: StationsRepository, innerPadding: PaddingValues, createDialogOpen: Boolean, onCreateDialogClose: ()->Unit) {
-    val viewModel = viewModel { GenericViewModel(repository) }
+    val viewModel = viewModel { StationsViewModel(repository) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         viewModel.loadItems()

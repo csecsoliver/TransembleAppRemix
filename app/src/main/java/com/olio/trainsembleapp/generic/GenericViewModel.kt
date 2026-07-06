@@ -2,11 +2,20 @@ package com.olio.trainsembleapp.generic
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.olio.trainsembleapp.cars.Car
+import com.olio.trainsembleapp.cars.CarDto
+import com.olio.trainsembleapp.cars.CarsRepository
+import com.olio.trainsembleapp.stations.Station
+import com.olio.trainsembleapp.stations.StationDto
+import com.olio.trainsembleapp.stations.StationsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class GenericViewModel<T, TDto>(
+class CarsViewModel(repository: CarsRepository) : GenericViewModel<Car, CarDto>(repository)
+class StationsViewModel(repository: StationsRepository) : GenericViewModel<Station, StationDto>(repository)
+
+open class GenericViewModel<T, TDto>(
     private val repository: GenericRepository<T, TDto>
 ) : ViewModel() {
 
@@ -67,3 +76,4 @@ class GenericViewModel<T, TDto>(
         }
     }
 }
+
