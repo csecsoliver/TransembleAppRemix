@@ -17,7 +17,7 @@ class AuthRepository(var pbClient: PocketbaseClient) {
     suspend fun authenticate() {
 
         val authToken = pbClient.records.authWithPassword<AuthRecord>(
-            "users", "REDACTED_EMAIL", "REDACTED_PASSWORD"
+            "users", BuildConfig.PB_USER, BuildConfig.PB_PASS
         ).token
         pbClient.login{ token = authToken }
         isAuthenticated.value = AuthState.Authenticated(pbClient.records.refresh<AuthRecord>("users").record)

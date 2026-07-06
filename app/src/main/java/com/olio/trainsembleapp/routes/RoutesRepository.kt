@@ -32,6 +32,7 @@ class RoutesRepository(private val authRepository: AuthRepository): GenericRepos
         return pbClient.records.update<Route>("routes", id, Json.encodeToString(dto))
     }
     override suspend fun createItem(entry: RouteUiType): Route {
-        return pbClient.records.create<Route>("routes", Json.encodeToString(entry))
+        val dto = entry.toDto()
+        return pbClient.records.create<Route>("routes", Json.encodeToString(dto))
     }
 }

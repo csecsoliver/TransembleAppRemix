@@ -23,9 +23,7 @@ class TrainsembleApplication : Application() {
 
         pbClient = PocketbaseClient({
             protocol = URLProtocol.HTTPS
-            user= BuildConfig.PB_USER
-            password = BuildConfig.PB_PASS
-            host = "REDACTED_URL"
+            host = BuildConfig.PB_URL
         })
         authRepository = AuthRepository(pbClient)
         carsRepository = CarsRepository(authRepository)
