@@ -104,9 +104,9 @@ class MainActivity : ComponentActivity() {
 
                             entry<ScreenTab.HOME> {
 
-                                val authState by app.authRepository.isAuthenticated.collectAsStateWithLifecycle()
+                                val authState = app.authRepository.isAuthenticated.collectAsStateWithLifecycle()
 
-                                when (val state = authState) {
+                                when (val state = authState.value) {
                                     is AuthState.Authenticating -> {
                                         CircularProgressIndicator(
                                             modifier = Modifier.padding(

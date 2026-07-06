@@ -28,6 +28,9 @@ open class GenericViewModel<T, TDto>(
     private val _uiState = MutableStateFlow<UiState<T>>(UiState.Loading())
     val uiState = _uiState.asStateFlow()
 
+    private val _editState = MutableStateFlow<EditOperationState>(EditOperationState.Idle)
+    val editState = _editState.asStateFlow()
+
     init {
         loadItems()
     }
@@ -46,39 +49,46 @@ open class GenericViewModel<T, TDto>(
     }
     fun deleteItem(id: String) {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading("Deleting...")
+            _editState.value = EditOperationState.Loading("Deleting...")
             try {
                 if (repository.deleteItemById(id)) {
+                    _editState.value = EditOperationState.Success
                     loadItems()
                 } else {
-                    _uiState.value = UiState.Error(Exception("Failed to delete"))
+                    _editState.value = EditOperationState.Error(Exception("Failed to delete"))
                 }
             } catch (e: Exception) {
-                _uiState.value = UiState.Error(e)
+                _editState.value = EditOperationState.Error(e)
             }
         }
     }
     fun editItem(id: String, entry: TDto) {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading("Saving...")
+            _editState.value = EditOperationState.Loading("Saving...")
             try {
                 val edited = repository.editItem(id, entry)
+                _editState.value = EditOperationState.Success
                 loadItems(true)
             } catch (e: Exception) {
-                _uiState.value = UiState.Error(e)
+                _editState.value = EditOperationState.Error(e)
             }
         }
     }
     fun createItem(entry: TDto) {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading("Saving...")
+            _editState.value = EditOperationState.Loading("Saving...")
             try {
                 val edited = repository.createItem(entry)
+                _editState.value = EditOperationState.Success
                 loadItems(true)
             } catch (e: Exception) {
-                _uiState.value = UiState.Error(e)
+                _editState.value = EditOperationState.Error(e)
             }
         }
+    }
+
+    fun clearEditError() {
+        _editState.value = EditOperationState.Idle
     }
 }
 

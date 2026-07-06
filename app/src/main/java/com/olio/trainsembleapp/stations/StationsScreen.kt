@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.olio.trainsembleapp.a_generic.EditOperationState
 import com.olio.trainsembleapp.a_generic.GenericList
 import com.olio.trainsembleapp.a_generic.StationsViewModel
 import com.olio.trainsembleapp.a_generic.UiState
@@ -24,9 +25,10 @@ import com.olio.trainsembleapp.ui.TextFormField
 @Composable
 fun StationsScreen(repository: StationsRepository, innerPadding: PaddingValues, createDialogOpen: Boolean, onCreateDialogClose: ()->Unit, setErrorState: (Boolean)->Unit) {
     val viewModel = viewModel { StationsViewModel(repository) }
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    setErrorState(uiState.isError)
-    when (val state = uiState) {
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+    val editState = viewModel.editState.collectAsStateWithLifecycle()
+    setErrorState(uiState.value.isError)
+    when (val state = uiState.value) {
         is UiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
@@ -49,16 +51,27 @@ fun StationsScreen(repository: StationsRepository, innerPadding: PaddingValues, 
                 val carCreateState = remember { mutableStateOf(StationDto(
                     ""
                 )) }
+                val operationTriggered = remember { mutableStateOf(false) }
+                LaunchedEffect(editState.value) {
+                    if (editState.value is EditOperationState.Loading) operationTriggered.value = true
+                    if (operationTriggered.value && editState.value is EditOperationState.Success) {
+                        onCreateDialogClose()
+                    }
+                }
                 EditDialog(
                     title = "Create car",
                     onDismiss = {
-                        onCreateDialogClose()
+                        if (editState.value !is EditOperationState.Loading) {
+                            viewModel.clearEditError()
+                            onCreateDialogClose()
+                        }
                     },
                     onSave = {
                         viewModel.createItem(carCreateState.value)
-                        onCreateDialogClose()
                     },
                     onDelete = null,
+                    editState = editState.value,
+                    onClearError = { viewModel.clearEditError() },
                     fields = listOf(
                         TextFormField(
                             "Name",
@@ -72,18 +85,28 @@ fun StationsScreen(repository: StationsRepository, innerPadding: PaddingValues, 
             } else if (editDialogOpen.value != null) {
                 val carId = remember { editDialogOpen.value!!.id!! }
                 val carEditState = remember { mutableStateOf(editDialogOpen.value!!.toDto()) }
+                val operationTriggered = remember { mutableStateOf(false) }
+                LaunchedEffect(editState.value) {
+                    if (editState.value is EditOperationState.Loading) operationTriggered.value = true
+                    if (operationTriggered.value && editState.value is EditOperationState.Success) {
+                        editDialogOpen.value = null
+                    }
+                }
                 EditDialog(carId,
                     onDismiss = {
-                        editDialogOpen.value = null
+                        if (editState.value !is EditOperationState.Loading) {
+                            viewModel.clearEditError()
+                            editDialogOpen.value = null
+                        }
                     },
                     onSave = {
                         viewModel.editItem(carId, carEditState.value)
-                        editDialogOpen.value = null
                     },
                     onDelete = {
                         viewModel.deleteItem(carId)
-                        editDialogOpen.value = null
                     },
+                    editState = editState.value,
+                    onClearError = { viewModel.clearEditError() },
                     fields = listOf(
                         TextFormField(
                             "Name",

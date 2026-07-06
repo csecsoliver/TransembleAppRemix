@@ -7,3 +7,10 @@ sealed class UiState<T> {
 }
 
 val <T> UiState<T>.isError: Boolean get() = this is UiState.Error
+
+sealed class EditOperationState {
+    object Idle : EditOperationState()
+    data class Loading(val message: String? = null) : EditOperationState()
+    object Success : EditOperationState()
+    data class Error(val exception: Exception) : EditOperationState()
+}
