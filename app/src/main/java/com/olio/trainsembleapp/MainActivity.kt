@@ -28,6 +28,8 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.olio.trainsembleapp.cars.CarsScreen
+import com.olio.trainsembleapp.routes.RoutesRepository
+import com.olio.trainsembleapp.routes.RoutesScreen
 import com.olio.trainsembleapp.stations.StationsScreen
 import com.olio.trainsembleapp.ui.ScreenTab
 import com.olio.trainsembleapp.ui.screenTabs
@@ -46,11 +48,12 @@ class MainActivity : ComponentActivity() {
             val backStack = remember { mutableStateListOf<ScreenTab>(ScreenTab.HOME) }
             val currentTab = backStack.lastOrNull() ?: ScreenTab.HOME
             val createDialogOpen = remember { mutableStateOf(false) }
+            val errorState = remember { mutableStateOf(false) }
             TrainsembleAppTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     floatingActionButton = {
-                        if (currentTab == ScreenTab.CARS) {
+                        if ((currentTab == ScreenTab.CARS|| currentTab == ScreenTab.STATIONS || currentTab == ScreenTab.ROUTES) && !errorState.value ) {
 
                             FloatingActionButton(
                                 onClick = {
@@ -80,10 +83,11 @@ class MainActivity : ComponentActivity() {
                                     label = { Text(entry.title) },
                                     onClick = {
                                         if (currentTab != entry) {
-                                            app
-                                            backStack.clear()
-                                            backStack.add(ScreenTab.HOME)
-                                            if (entry != ScreenTab.HOME) {
+                                            if (backStack.contains(entry)) {
+                                                while (backStack.lastOrNull() != entry) {
+                                                    backStack.removeLastOrNull()
+                                                }
+                                            } else {
                                                 backStack.add(entry)
                                             }
                                         }
@@ -139,7 +143,10 @@ class MainActivity : ComponentActivity() {
                                     repository = app.carsRepository,
                                     innerPadding = innerPadding,
                                     createDialogOpen = createDialogOpen.value,
-                                    onCreateDialogClose = { createDialogOpen.value = false }
+                                    onCreateDialogClose = { createDialogOpen.value = false },
+                                    setErrorState = {
+                                        errorState.value = it
+                                    }
                                 )
                             }
 
@@ -148,7 +155,21 @@ class MainActivity : ComponentActivity() {
                                     repository = app.stationsRepository,
                                     innerPadding = innerPadding,
                                     createDialogOpen = createDialogOpen.value,
-                                    onCreateDialogClose = { createDialogOpen.value = false }
+                                    onCreateDialogClose = { createDialogOpen.value = false },
+                                    setErrorState = {
+                                        errorState.value = it
+                                    }
+                                )
+                            }
+                            entry<ScreenTab.ROUTES> {
+                                RoutesScreen(
+                                    repository = app.routesRepository,
+                                    innerPadding = innerPadding,
+                                    createDialogOpen = createDialogOpen.value,
+                                    onCreateDialogClose = { createDialogOpen.value = false },
+                                    setErrorState = {
+                                        errorState.value = it
+                                    }
                                 )
                             }
                         }

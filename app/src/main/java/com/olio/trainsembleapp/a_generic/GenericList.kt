@@ -1,4 +1,4 @@
-package com.olio.trainsembleapp.generic
+package com.olio.trainsembleapp.a_generic
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues

@@ -1,4 +1,4 @@
-package com.olio.trainsembleapp.generic
+package com.olio.trainsembleapp.a_generic
 
 interface GenericRepository<T, TDto> {
     suspend fun getItems(forceRefresh: Boolean = false): List<T>

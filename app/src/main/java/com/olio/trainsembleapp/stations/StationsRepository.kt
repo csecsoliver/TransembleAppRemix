@@ -2,7 +2,7 @@ package com.olio.trainsembleapp.stations
 
 import com.olio.trainsembleapp.AuthRepository
 import com.olio.trainsembleapp.AuthState
-import com.olio.trainsembleapp.generic.GenericRepository
+import com.olio.trainsembleapp.a_generic.GenericRepository
 import io.github.agrevster.pocketbaseKotlin.PocketbaseClient
 import kotlinx.serialization.json.Json
 
@@ -15,7 +15,7 @@ class StationsRepository(private val authRepository: AuthRepository): GenericRep
             throw IllegalStateException("Not authenticated")
         }
         if (forceRefresh || cache == null) {
-            cache = pbClient.records.getFullList<Station>("stations", 10)
+            cache = pbClient.records.getFullList<Station>("stations", 1000)
         }
         return cache ?: emptyList()
     }

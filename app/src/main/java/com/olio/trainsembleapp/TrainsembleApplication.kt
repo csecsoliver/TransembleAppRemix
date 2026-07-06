@@ -2,6 +2,7 @@ package com.olio.trainsembleapp
 
 import android.app.Application
 import com.olio.trainsembleapp.cars.CarsRepository
+import com.olio.trainsembleapp.routes.RoutesRepository
 import com.olio.trainsembleapp.stations.StationsRepository
 import io.github.agrevster.pocketbaseKotlin.PocketbaseClient
 import io.github.agrevster.pocketbaseKotlin.dsl.login
@@ -15,6 +16,8 @@ class TrainsembleApplication : Application() {
     lateinit var authRepository: AuthRepository private set
     lateinit var carsRepository: CarsRepository private set
     lateinit var stationsRepository: StationsRepository private set
+    lateinit var routesRepository: RoutesRepository private set
+
     override fun onCreate() {
         super.onCreate()
 
@@ -27,6 +30,7 @@ class TrainsembleApplication : Application() {
         authRepository = AuthRepository(pbClient)
         carsRepository = CarsRepository(authRepository)
         stationsRepository = StationsRepository(authRepository)
+        routesRepository = RoutesRepository(authRepository)
         MainScope().launch {
             authRepository.authenticate()
         }
