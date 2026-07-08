@@ -1,0 +1,27 @@
+image: ubuntu/lts
+packages:
+  - openjdk-21-jdk-headless
+  - unzip
+  - wget
+environment:
+  ANDROID_SDK_ROOT: /home/build/android-sdk
+  ANDROID_HOME: /home/build/android-sdk
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2g"
+sources:
+  - https://git.sr.ht/~olio/trainsemble-app
+tasks:
+  - setup-sdk: |
+      wget -q https://dl.google.com/android/repository/commandlinetools-linux-15641748_latest.zip
+      unzip -q commandlinetools-linux-*.zip
+      mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+      mv cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+      export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+      yes | sdkmanager --licenses > /dev/null 2>&1 || true
+  - check: |
+      cd trainsemble-app
+      echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+      echo "PB_URL=ci.example.com" >> local.properties
+      echo "PB_USER=ci@example.com" >> local.properties
+      echo "PB_PASS=dummy" >> local.properties
+      chmod +x gradlew
+      ./gradlew lint test --no-daemon --stacktrace
