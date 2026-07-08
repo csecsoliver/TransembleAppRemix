@@ -18,14 +18,35 @@ import kotlinx.coroutines.launch
 
 class CarsViewModel(repository: CarsRepository) : GenericViewModel<Car, CarDto>(repository)
 class StationsViewModel(repository: StationsRepository) : GenericViewModel<Station, StationDto>(repository)
-class RoutesViewModel(repository: RoutesRepository) : GenericViewModel<Route, RouteUiType>(repository)
+class RoutesViewModel(repository: RoutesRepository,  private val stationsRepository: StationsRepository) : GenericViewModel<Route, RouteUiType>(repository){
+    protected val _stationItems = MutableStateFlow<List<Station>>(emptyList())
+
+    protected val _StationsUiState = MutableStateFlow<UiState<Station>>(UiState.Loading())
+    val stationsUiState = _StationsUiState.asStateFlow()
+
+    override fun loadItems(reload: Boolean) {
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading("Loading items...")
+            try {
+                _items.value = repository.getItems(reload)
+                _stationItems.value = stationsRepository.getItems(reload)
+                _uiState.value = UiState.Success(_items.value)
+                _StationsUiState.value = UiState.Success(_stationItems.value)
+            } catch (e: Exception) {
+                _uiState.value = UiState.Error(e)
+                _items.value = emptyList()
+                _stationItems.value = emptyList()
+            }
+        }
+    }
+}
 
 open class GenericViewModel<T, TDto>(
-    private val repository: GenericRepository<T, TDto>
+    protected val repository: GenericRepository<T, TDto>
 ) : ViewModel() {
 
-    private val _items = MutableStateFlow<List<T>>(emptyList())
-    private val _uiState = MutableStateFlow<UiState<T>>(UiState.Loading())
+    protected val _items = MutableStateFlow<List<T>>(emptyList())
+    protected val _uiState = MutableStateFlow<UiState<T>>(UiState.Loading())
     val uiState = _uiState.asStateFlow()
 
     private val _editState = MutableStateFlow<EditOperationState>(EditOperationState.Idle)
@@ -35,7 +56,7 @@ open class GenericViewModel<T, TDto>(
         loadItems()
     }
 
-     fun loadItems(reload: Boolean = false) {
+     open fun loadItems(reload: Boolean = false) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading("Loading items...")
             try {
@@ -66,7 +87,7 @@ open class GenericViewModel<T, TDto>(
         viewModelScope.launch {
             _editState.value = EditOperationState.Loading("Saving...")
             try {
-                val edited = repository.editItem(id, entry)
+                repository.editItem(id, entry)
                 _editState.value = EditOperationState.Success
                 loadItems(true)
             } catch (e: Exception) {
@@ -78,7 +99,7 @@ open class GenericViewModel<T, TDto>(
         viewModelScope.launch {
             _editState.value = EditOperationState.Loading("Saving...")
             try {
-                val edited = repository.createItem(entry)
+                repository.createItem(entry)
                 _editState.value = EditOperationState.Success
                 loadItems(true)
             } catch (e: Exception) {

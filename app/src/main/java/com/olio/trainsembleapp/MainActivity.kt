@@ -17,7 +17,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,7 +27,6 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.olio.trainsembleapp.cars.CarsScreen
-import com.olio.trainsembleapp.routes.RoutesRepository
 import com.olio.trainsembleapp.routes.RoutesScreen
 import com.olio.trainsembleapp.stations.StationsScreen
 import com.olio.trainsembleapp.ui.ScreenTab
@@ -106,7 +104,7 @@ class MainActivity : ComponentActivity() {
 
                                 val authState = app.authRepository.isAuthenticated.collectAsStateWithLifecycle()
 
-                                when (val state = authState.value) {
+                                when (authState.value) {
                                     is AuthState.Authenticating -> {
                                         CircularProgressIndicator(
                                             modifier = Modifier.padding(
@@ -164,6 +162,7 @@ class MainActivity : ComponentActivity() {
                             entry<ScreenTab.ROUTES> {
                                 RoutesScreen(
                                     repository = app.routesRepository,
+                                    stationsRepository = app.stationsRepository,
                                     innerPadding = innerPadding,
                                     createDialogOpen = createDialogOpen.value,
                                     onCreateDialogClose = { createDialogOpen.value = false },

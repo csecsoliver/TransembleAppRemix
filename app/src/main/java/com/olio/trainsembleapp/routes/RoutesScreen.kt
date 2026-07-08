@@ -19,13 +19,16 @@ import com.olio.trainsembleapp.a_generic.GenericList
 import com.olio.trainsembleapp.a_generic.RoutesViewModel
 import com.olio.trainsembleapp.a_generic.UiState
 import com.olio.trainsembleapp.a_generic.isError
+import com.olio.trainsembleapp.stations.Station
+import com.olio.trainsembleapp.stations.StationsRepository
 import com.olio.trainsembleapp.ui.EditDialog
 import com.olio.trainsembleapp.ui.NumberFormField
+import com.olio.trainsembleapp.ui.SelectInput
 import com.olio.trainsembleapp.ui.TextFormField
 
 @Composable
-fun RoutesScreen(repository: RoutesRepository, innerPadding: PaddingValues, createDialogOpen: Boolean, onCreateDialogClose: ()->Unit, setErrorState: (Boolean)->Unit) {
-    val viewModel = viewModel { RoutesViewModel(repository) }
+fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsRepository, innerPadding: PaddingValues, createDialogOpen: Boolean, onCreateDialogClose: ()->Unit, setErrorState: (Boolean)->Unit) {
+    val viewModel = viewModel { RoutesViewModel(repository, stationsRepository) }
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val editState = viewModel.editState.collectAsStateWithLifecycle()
     setErrorState(uiState.value.isError)
@@ -59,6 +62,20 @@ fun RoutesScreen(repository: RoutesRepository, innerPadding: PaddingValues, crea
                     ""
                 )) }
                 val operationTriggered = remember { mutableStateOf(false) }
+                val stationMap = remember {
+                    val asd = (viewModel.stationsUiState.value as UiState.Success<Station>)
+                    asd.data.associate {
+                        it.id!! to it.name
+                    }.toSortedMap()
+                }
+                val expandedOrigin = remember { mutableStateOf(false) }
+                val onExpandedChangeOrigin: (Boolean) -> Unit = {
+                    expandedOrigin.value = it
+                }
+                val expandedDestination = remember { mutableStateOf(false) }
+                val onExpandedChangeDestination: (Boolean) -> Unit = {
+                    expandedDestination.value = it
+                }
                 LaunchedEffect(editState.value) {
                     if (editState.value is EditOperationState.Loading) operationTriggered.value = true
                     if (operationTriggered.value && editState.value is EditOperationState.Success) {
@@ -75,6 +92,8 @@ fun RoutesScreen(repository: RoutesRepository, innerPadding: PaddingValues, crea
                     },
                     onSave = {
                         viewModel.createItem(carCreateState.value)
+                        onExpandedChangeOrigin(false)
+                        onExpandedChangeDestination(false)
                     },
                     onDelete = null,
                     editState = editState.value,
@@ -115,11 +134,41 @@ fun RoutesScreen(repository: RoutesRepository, innerPadding: PaddingValues, crea
                                 carCreateState.value = carCreateState.value.copy(arrival = it)
                             }
                         ),
+                        SelectInput(
+                            "Origin",
+                            selection = (
+                                    carCreateState.value.origin
+                                            to
+                                            (stationMap[carCreateState.value.origin]?:
+                                            "No such station")) ,
+                            items = stationMap,
+                            onExpandedChange = onExpandedChangeOrigin,
+                            expanded = expandedOrigin.value,
+                            onChange = {
+                                carCreateState.value = carCreateState.value.copy(origin = it.first)
+                                onExpandedChangeOrigin(false)
+                            }
+                        ),
                         TextFormField(
                             "Origin",
                             carCreateState.value.origin,
                             {
                                 carCreateState.value = carCreateState.value.copy(origin = it)
+                            }
+                        ),
+                        SelectInput(
+                            "Destination",
+                            selection = (
+                                    carCreateState.value.destination
+                                            to
+                                            (stationMap[carCreateState.value.destination]?:
+                                            "No such station")) ,
+                            items = stationMap,
+                            onExpandedChange = onExpandedChangeDestination,
+                            expanded = expandedDestination.value,
+                            onChange = {
+                                carCreateState.value = carCreateState.value.copy(destination = it.first)
+                                onExpandedChangeDestination(false)
                             }
                         ),
                         TextFormField(
@@ -135,11 +184,26 @@ fun RoutesScreen(repository: RoutesRepository, innerPadding: PaddingValues, crea
                 val carId = remember { editDialogOpen.value!!.id!! }
                 val carEditState = remember { mutableStateOf(editDialogOpen.value!!.toUi())}
                 val operationTriggered = remember { mutableStateOf(false) }
+                val stationMap = remember {
+                    val asd = (viewModel.stationsUiState.value as UiState.Success<Station>)
+                    asd.data.associate {
+                        it.id!! to it.name
+                    }.toSortedMap()
+                }
+                val expandedOrigin = remember { mutableStateOf(false) }
+                val onExpandedChangeOrigin: (Boolean) -> Unit = {
+                    expandedOrigin.value = it
+                }
+                val expandedDestination = remember { mutableStateOf(false) }
+                val onExpandedChangeDestination: (Boolean) -> Unit = {
+                    expandedDestination.value = it
+                }
                 LaunchedEffect(editState.value) {
                     if (editState.value is EditOperationState.Loading) operationTriggered.value = true
                     if (operationTriggered.value && editState.value is EditOperationState.Success) {
                         editDialogOpen.value = null
                     }
+
                 }
                 EditDialog(carId,
                     onDismiss = {
@@ -150,9 +214,13 @@ fun RoutesScreen(repository: RoutesRepository, innerPadding: PaddingValues, crea
                     },
                     onSave = {
                         viewModel.editItem(carId, carEditState.value)
+                        onExpandedChangeOrigin(false)
+                        onExpandedChangeDestination(false)
                     },
                     onDelete = {
                         viewModel.deleteItem(carId)
+                        onExpandedChangeOrigin(false)
+                        onExpandedChangeDestination(false)
                     },
                     editState = editState.value,
                     onClearError = { viewModel.clearEditError() },
@@ -193,11 +261,41 @@ fun RoutesScreen(repository: RoutesRepository, innerPadding: PaddingValues, crea
                                 carEditState.value = carEditState.value.copy(arrival = it)
                             }
                         ),
+                        SelectInput(
+                            "Origin",
+                            selection = (
+                                    carEditState.value.origin
+                                            to
+                                            (stationMap[carEditState.value.origin]?:
+                                            "No such station")) ,
+                            items = stationMap,
+                            onExpandedChange = onExpandedChangeOrigin,
+                            expanded = expandedOrigin.value,
+                            onChange = {
+                                carEditState.value = carEditState.value.copy(origin = it.first)
+                                onExpandedChangeOrigin(false)
+                            }
+                        ),
                         TextFormField(
                             "Origin",
                             carEditState.value.origin,
                             {
                                 carEditState.value = carEditState.value.copy(origin = it)
+                            }
+                        ),
+                        SelectInput(
+                            "Destination",
+                            selection = (
+                                    carEditState.value.destination
+                                            to
+                                            (stationMap[carEditState.value.destination]?:
+                                            "No such station")) ,
+                            items = stationMap,
+                            onExpandedChange = onExpandedChangeDestination,
+                            expanded = expandedDestination.value,
+                            onChange = {
+                                carEditState.value = carEditState.value.copy(destination = it.first)
+                                onExpandedChangeDestination(false)
                             }
                         ),
                         TextFormField(
@@ -207,6 +305,7 @@ fun RoutesScreen(repository: RoutesRepository, innerPadding: PaddingValues, crea
                                 carEditState.value = carEditState.value.copy(destination = it)
                             }
                         ),
+
                     )
                 )
             }
@@ -220,13 +319,18 @@ fun RoutesScreen(repository: RoutesRepository, innerPadding: PaddingValues, crea
                 },
                 getId = { it.id ?: it.number},
                 headlineContent = {
-                    Text("${it.origin} - ${it.destination}")
+                    Text("${it.expand!!["origin"]!!.name} - ${it.expand!!["destination"]!!.name}")
                 },
                 overlineContent = {
                     Text("${it.departure} - ${it.arrival}")
                 },
                 supportingContent = {
-
+                    val asd = if (it.nick != null && it.nick != "") {
+                        "(${it.nick} ${it.type} ${it.number})"
+                    } else {
+                        "(${it.type} ${it.number})"
+                    }
+                    Text(asd)
                 },
             )
         }
