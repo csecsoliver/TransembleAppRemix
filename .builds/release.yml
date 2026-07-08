@@ -8,7 +8,7 @@ environment:
   ANDROID_HOME: /home/build/android-sdk
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2g"
 sources:
-  - https://git.sr.ht/~olio/trainsemble-app
+  - https://git.sr.ht/~csoliver/TrainsembleApp
 secrets:
   - 565b4a81-d997-4dff-ab0b-f2dae80839cf
 tasks:
