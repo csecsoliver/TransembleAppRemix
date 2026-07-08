@@ -20,7 +20,7 @@ tasks:
       export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
       yes | sdkmanager --licenses > /dev/null 2>&1 || true
   - build-release: |
-      cd trainsemble-app
+      cd TrainsembleApp
       echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       set +x
       cat ~/pb.properties >> local.properties
@@ -28,7 +28,7 @@ tasks:
       chmod +x gradlew
       ./gradlew assembleRelease --no-daemon --stacktrace
 artifacts:
-  - trainsemble-app/app/build/outputs/apk/release/app-release.apk
+  - TrainsembleApp/app/build/outputs/apk/release/app-release.apk
 submitter:
   git.sr.ht:
     allow-refs:

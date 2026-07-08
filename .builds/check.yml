@@ -18,7 +18,7 @@ tasks:
       export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
       yes | sdkmanager --licenses > /dev/null 2>&1 || true
   - check: |
-      cd trainsemble-app
+      cd TrainsembleApp
       echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
       echo "PB_URL=ci.example.com" >> local.properties
       echo "PB_USER=ci@example.com" >> local.properties
