@@ -88,14 +88,14 @@ class NumberFormField(
 
 class SelectInput(
     override val label: String,
-    val items: SortedMap<String, String>,
+    val items: Map<String, String>,
     val selection: Pair<String, String>,
     val expanded: Boolean,
     val onExpandedChange: (Boolean) -> Unit,
     val onChange: (Pair<String, String>) -> Unit,
     val validator: (String) -> Boolean = {it.isNotBlank()}
 ): FormField {
-    override val isValid: Boolean get() = validator(selection.second)
+    override val isValid: Boolean get() = validator(selection.first)
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable

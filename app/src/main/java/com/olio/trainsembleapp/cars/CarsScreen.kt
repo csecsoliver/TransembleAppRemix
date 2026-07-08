@@ -104,7 +104,9 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
                             carCreateState.value.nick?:"",
                             {
                                 carCreateState.value = carCreateState.value.copy(nick = it)
-                            }
+                            },
+                            validator = {true}
+
                         ),
                         TextFormFieldWithImage(
                             "vagonweb",
@@ -167,7 +169,8 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
                             carEditState.value.nick?:"",
                             {
                                 carEditState.value = carEditState.value.copy(nick = it)
-                            }
+                            },
+                            validator = {true}
                         ),
                         TextFormFieldWithImage(
                             "vagonweb",

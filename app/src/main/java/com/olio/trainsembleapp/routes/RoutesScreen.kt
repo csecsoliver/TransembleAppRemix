@@ -25,6 +25,7 @@ import com.olio.trainsembleapp.ui.EditDialog
 import com.olio.trainsembleapp.ui.NumberFormField
 import com.olio.trainsembleapp.ui.SelectInput
 import com.olio.trainsembleapp.ui.TextFormField
+import kotlin.collections.toSortedMap
 
 @Composable
 fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsRepository, innerPadding: PaddingValues, createDialogOpen: Boolean, onCreateDialogClose: ()->Unit, setErrorState: (Boolean)->Unit) {
@@ -64,9 +65,9 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                 val operationTriggered = remember { mutableStateOf(false) }
                 val stationMap = remember {
                     val asd = (viewModel.stationsUiState.value as UiState.Success<Station>)
-                    asd.data.associate {
+                    asd.data.sortedBy { it.name }.associate {
                         it.id!! to it.name
-                    }.toSortedMap()
+                    }
                 }
                 val expandedOrigin = remember { mutableStateOf(false) }
                 val onExpandedChangeOrigin: (Boolean) -> Unit = {
@@ -119,6 +120,9 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                             {
                                 carCreateState.value = carCreateState.value.copy(nick = it)
                             }
+
+                            ,
+                            validator = {true}
                         ),
                         TextFormField(
                             "Departure",
@@ -147,14 +151,16 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                             onChange = {
                                 carCreateState.value = carCreateState.value.copy(origin = it.first)
                                 onExpandedChangeOrigin(false)
-                            }
+                            },
+                            validator = {stationMap[it] != null}
                         ),
                         TextFormField(
                             "Origin",
                             carCreateState.value.origin,
                             {
                                 carCreateState.value = carCreateState.value.copy(origin = it)
-                            }
+                            },
+                            validator = {stationMap[it] != null}
                         ),
                         SelectInput(
                             "Destination",
@@ -169,14 +175,16 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                             onChange = {
                                 carCreateState.value = carCreateState.value.copy(destination = it.first)
                                 onExpandedChangeDestination(false)
-                            }
+                            },
+                            validator = {stationMap[it] != null}
                         ),
                         TextFormField(
                             "Destination",
                             carCreateState.value. destination,
                             {
                                 carCreateState.value = carCreateState.value.copy(destination = it)
-                            }
+                            },
+                            validator = {stationMap[it] != null}
                         ),
                     )
                 )
@@ -186,9 +194,9 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                 val operationTriggered = remember { mutableStateOf(false) }
                 val stationMap = remember {
                     val asd = (viewModel.stationsUiState.value as UiState.Success<Station>)
-                    asd.data.associate {
+                    asd.data.sortedBy { it.name }.associate {
                         it.id!! to it.name
-                    }.toSortedMap()
+                    }
                 }
                 val expandedOrigin = remember { mutableStateOf(false) }
                 val onExpandedChangeOrigin: (Boolean) -> Unit = {
@@ -245,7 +253,8 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                             carEditState.value.nick?:"",
                             {
                                 carEditState.value = carEditState.value.copy(nick = it)
-                            }
+                            },
+                            validator = {true}
                         ),
                         TextFormField(
                             "Departure",
@@ -274,14 +283,16 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                             onChange = {
                                 carEditState.value = carEditState.value.copy(origin = it.first)
                                 onExpandedChangeOrigin(false)
-                            }
+                            },
+                            validator = {stationMap[it] != null}
                         ),
                         TextFormField(
                             "Origin",
                             carEditState.value.origin,
                             {
                                 carEditState.value = carEditState.value.copy(origin = it)
-                            }
+                            },
+                            validator = {stationMap[it] != null}
                         ),
                         SelectInput(
                             "Destination",
@@ -296,14 +307,16 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                             onChange = {
                                 carEditState.value = carEditState.value.copy(destination = it.first)
                                 onExpandedChangeDestination(false)
-                            }
+                            },
+                            validator = {stationMap[it] != null}
                         ),
                         TextFormField(
                             "Destination",
                             carEditState.value. destination,
                             {
                                 carEditState.value = carEditState.value.copy(destination = it)
-                            }
+                            },
+                            validator = {stationMap[it] != null}
                         ),
 
                     )
