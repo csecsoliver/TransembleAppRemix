@@ -8,6 +8,9 @@ import com.olio.trainsembleapp.cars.CarsRepository
 import com.olio.trainsembleapp.routes.Route
 import com.olio.trainsembleapp.routes.RouteUiType
 import com.olio.trainsembleapp.routes.RoutesRepository
+import com.olio.trainsembleapp.sightings.SightingsRepository
+import com.olio.trainsembleapp.stations.Sighting
+import com.olio.trainsembleapp.stations.SightingDto
 import com.olio.trainsembleapp.stations.Station
 import com.olio.trainsembleapp.stations.StationDto
 import com.olio.trainsembleapp.stations.StationsRepository
@@ -40,6 +43,46 @@ class RoutesViewModel(repository: RoutesRepository,  private val stationsReposit
         }
     }
 }
+
+
+class SightingsViewModel(repository: SightingsRepository, private val routesRepository: RoutesRepository,  private val stationsRepository: StationsRepository, private val carsRepository: CarsRepository) : GenericViewModel<Sighting, SightingDto>(repository){
+    protected val _stationItems = MutableStateFlow<List<Station>>(emptyList())
+    protected val _StationsUiState = MutableStateFlow<UiState<Station>>(UiState.Loading())
+    val stationsUiState = _StationsUiState.asStateFlow()
+
+    protected val _routesItems = MutableStateFlow<List<Route>>(emptyList())
+    protected val _RoutesUiState = MutableStateFlow<UiState<Route>>(UiState.Loading())
+    val routesUiState = _RoutesUiState.asStateFlow()
+
+
+    protected val _carsItems = MutableStateFlow<List<Car>>(emptyList())
+    protected val _CarsUiState = MutableStateFlow<UiState<Car>>(UiState.Loading())
+    val carsUiState = _CarsUiState.asStateFlow()
+
+
+    override fun loadItems(reload: Boolean) {
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading("Loading items...")
+            try {
+                _items.value = repository.getItems(reload)
+                _stationItems.value = stationsRepository.getItems(reload)
+                _routesItems.value = routesRepository.getItems(reload)
+                _carsItems.value = carsRepository.getItems(reload)
+
+                _uiState.value = UiState.Success(_items.value)
+                _StationsUiState.value = UiState.Success(_stationItems.value)
+                _RoutesUiState.value = UiState.Success(_routesItems.value)
+                _CarsUiState.value = UiState.Success(_carsItems.value)
+            } catch (e: Exception) {
+                _uiState.value = UiState.Error(e)
+                _items.value = emptyList()
+                _stationItems.value = emptyList()
+                _routesItems.value = emptyList()
+            }
+        }
+    }
+}
+
 
 open class GenericViewModel<T, TDto>(
     protected val repository: GenericRepository<T, TDto>
