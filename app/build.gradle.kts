@@ -70,6 +70,4 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("io.coil-kt:coil-compose:2.7.0")
-    implementation(libs.reorderable)
-
 }

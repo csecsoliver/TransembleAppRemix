@@ -33,4 +33,4 @@ sealed interface ScreenTab : NavKey {
         override val icon = Icons.Default.CameraAlt
     }
 }
-val screenTabs = listOf<ScreenTab>(ScreenTab.HOME, ScreenTab.CARS, ScreenTab.STATIONS, ScreenTab.ROUTES)
+val screenTabs = listOf<ScreenTab>(ScreenTab.HOME, ScreenTab.CARS, ScreenTab.STATIONS, ScreenTab.ROUTES, ScreenTab.SIGHTINGS)

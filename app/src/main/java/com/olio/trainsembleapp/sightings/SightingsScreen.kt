@@ -36,16 +36,15 @@ import com.olio.trainsembleapp.stations.Sighting
 import com.olio.trainsembleapp.stations.SightingDto
 import com.olio.trainsembleapp.stations.Station
 import com.olio.trainsembleapp.stations.StationsRepository
+import com.olio.trainsembleapp.stations.toDto
 import com.olio.trainsembleapp.ui.DateFormField
 import com.olio.trainsembleapp.ui.EditDialog
 import com.olio.trainsembleapp.ui.FormField
 import com.olio.trainsembleapp.ui.NumberFormField
 import com.olio.trainsembleapp.ui.SelectInput
 import com.olio.trainsembleapp.ui.TextFormField
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlin.collections.associate
 
 @Composable
@@ -80,6 +79,29 @@ fun SightingsScreen(repository: SightingsRepository, routesRepository: RoutesRep
         is UiState.Success -> {
 
             val editDialogOpen = remember { mutableStateOf<Sighting?>(null) }
+
+            val routeMap = remember {
+                val asd = (viewModel.routesUiState.value as UiState.Success<Route>)
+                asd.data.sortedBy { "${it.nick?:""}${it.type}${it.number}" }.associate {
+                    it.id!! to "${it.nick?:""} ${it.type} ${it.number} ${it.expand!!["origin"]!!.name} - ${it.expand!!["destination"]!!.name}"
+                }
+            }
+            val stationMap = remember {
+                val asd = (viewModel.stationsUiState.value as UiState.Success<Station>)
+                asd.data.sortedBy { it.name }.associate {
+                    it.id!! to it.name
+                }
+            }
+            val carMap = remember {
+                val asd = (viewModel.carsUiState.value as UiState.Success<Car>)
+                asd.data.sortedBy { (it.nick?:"")+it.agency+it.type+it.uic }.associate {
+                    it.id!! to (it.nick?:"")+it.agency+it.type+it.uic
+                }
+            }
+            data class TrainCar(
+                val id: String = java.util.UUID.randomUUID().toString(),
+                val type: String
+            )
             if (createDialogOpen) {
                 val sightingCreateState = remember { mutableStateOf(SightingDto(
                     "",
@@ -91,40 +113,17 @@ fun SightingsScreen(repository: SightingsRepository, routesRepository: RoutesRep
                 val imagesState = remember { mutableStateOf<List<Uri>>( emptyList() ) }
                 val operationTriggered = remember { mutableStateOf(false) }
 
-                val routeMap = remember {
-                    val asd = (viewModel.routesUiState.value as UiState.Success<Route>)
-                    asd.data.sortedBy { "${it.nick?:""}${it.type}${it.number}" }.associate {
-                        it.id!! to "${it.nick?:""} ${it.type} ${it.number} ${it.expand!!["origin"]!!.name} - ${it.expand!!["destination"]!!.name}"
-                    }
-                }
                 val expandedRoute = remember { mutableStateOf(false) }
                 val onExpandedChangeRoute: (Boolean) -> Unit = {
                     expandedRoute.value = it
                 }
 
-
-                val stationMap = remember {
-                    val asd = (viewModel.stationsUiState.value as UiState.Success<Station>)
-                    asd.data.sortedBy { it.name }.associate {
-                        it.id!! to it.name
-                    }
-                }
                 val expandedStation = remember { mutableStateOf(false) }
                 val onExpandedChangeStation: (Boolean) -> Unit = {
                     expandedStation.value = it
                 }
 
 
-                val carMap = remember {
-                    val asd = (viewModel.carsUiState.value as UiState.Success<Car>)
-                    asd.data.sortedBy { (it.nick?:"")+it.agency+it.type+it.uic }.associate {
-                        it.id!! to (it.nick?:"")+it.agency+it.type+it.uic
-                    }
-                }
-                data class TrainCar(
-                    val id: String = java.util.UUID.randomUUID().toString(),
-                    val type: String
-                )
 
                 val trainComposition = remember { mutableStateListOf<TrainCar>() }
                 val onAddCar: (String)->Unit = {
@@ -149,7 +148,7 @@ fun SightingsScreen(repository: SightingsRepository, routesRepository: RoutesRep
                 }
                 val listState = rememberLazyListState()
                 val reorderableState = rememberReorderableLazyListState(
-                    listState = listState,
+                    lazyListState = listState,
                     onMove = { from, to -> onMove(from.index, to.index) }
                 )
 
@@ -169,9 +168,12 @@ fun SightingsScreen(repository: SightingsRepository, routesRepository: RoutesRep
                         }
                     },
                     onSave = {
+
+                        sightingCreateState.value = sightingCreateState.value.copy(cars = trainComposition.map { it.id })
                         viewModel.createItem(sightingCreateState.value)
                         onExpandedChangeRoute(false)
                         onExpandedChangeStation(false)
+                        onExpandedChangeCar(false)
                     },
                     onDelete = null,
                     editState = editState.value,
@@ -226,10 +228,10 @@ fun SightingsScreen(repository: SightingsRepository, routesRepository: RoutesRep
                             selection = ("" to "Select Car"),
                             items = carMap,
                             onExpandedChange = onExpandedChangeCar,
-                            expanded = expandedStation.value,
+                            expanded = expandedCar.value,
                             onChange = {
                                 onAddCar(it.first)
-                                onExpandedChangeStation(false)
+                                onExpandedChangeCar(false)
                             },
                             validator = {true}
                         ),
@@ -238,21 +240,20 @@ fun SightingsScreen(repository: SightingsRepository, routesRepository: RoutesRep
                             @Composable
                             override fun Render(modifier: Modifier) {
                                 LazyColumn(
-                                    state = listState,
-                                    modifier = Modifier.reorderable(reorderableState)
+                                    state = listState
                                 ) {
                                     items(
                                         items = trainComposition,
                                         key = { car -> car.id }
                                     ) { car ->
                                         ReorderableItem(
-                                            reorderableState = reorderableState,
+                                            reorderableState,
                                             key = car.id
                                         ) { isDragging ->
 
                                             Card(
                                                 elevation = CardDefaults.cardElevation(if (isDragging) 8.dp else 0.dp),
-                                                modifier = Modifier.detectReorderAfterLongPress(reorderableState)
+                                                modifier = Modifier.longPressDraggableHandle()
                                             ) {
 
                                             }
@@ -273,32 +274,59 @@ fun SightingsScreen(repository: SightingsRepository, routesRepository: RoutesRep
                         )
                     )
                 )
-            } else if (editDialogOpen.value != null) {
-                val carId = remember { editDialogOpen.value!!.id!! }
-                val carEditState = remember { mutableStateOf(editDialogOpen.value!!.toUi())}
+            }
+            else if (editDialogOpen.value != null) {
+                val sightingId = remember { editDialogOpen.value!!.id!! }
+                val sightingEditState = remember { mutableStateOf(editDialogOpen.value!!.toDto())}
                 val operationTriggered = remember { mutableStateOf(false) }
-                val stationMap = remember {
-                    val asd = (viewModel.stationsUiState.value as UiState.Success<Station>)
-                    asd.data.sortedBy { it.name }.associate {
-                        it.id!! to it.name
-                    }
+
+                val expandedRoute = remember { mutableStateOf(false) }
+                val onExpandedChangeRoute: (Boolean) -> Unit = {
+                    expandedRoute.value = it
                 }
-                val expandedOrigin = remember { mutableStateOf(false) }
-                val onExpandedChangeOrigin: (Boolean) -> Unit = {
-                    expandedOrigin.value = it
+
+                val expandedStation = remember { mutableStateOf(false) }
+                val onExpandedChangeStation: (Boolean) -> Unit = {
+                    expandedStation.value = it
                 }
-                val expandedDestination = remember { mutableStateOf(false) }
-                val onExpandedChangeDestination: (Boolean) -> Unit = {
-                    expandedDestination.value = it
+
+
+                val trainComposition = remember { mutableStateListOf<TrainCar>().apply {
+                    editDialogOpen.value!!.cars.forEach { add(TrainCar(type = it)) }
+                }}
+                val onAddCar: (String)->Unit = {
+                    trainComposition.add(TrainCar(type=it))
                 }
+                val onCarRemove: (String)-> Unit ={ id ->
+                    val index = trainComposition.indexOfFirst { it.id ==  id}
+                    trainComposition.removeAt(index)
+                }
+
+                val expandedCar = remember { mutableStateOf<Boolean>(false) }
+                val onExpandedChangeCar: (Boolean) -> Unit = {
+                    expandedCar.value = it
+                }
+
+                val openDate = remember { mutableStateOf(false) }
+                val onOpenDateChange: (Boolean) -> Unit = {
+                    openDate.value = it
+                }
+                val onMove: (Int, Int)->Unit = {from, to ->
+                    trainComposition.add(to, trainComposition.removeAt(from))
+                }
+                val listState = rememberLazyListState()
+                val reorderableState = rememberReorderableLazyListState(
+                    lazyListState = listState,
+                    onMove = { from, to -> onMove(from.index, to.index) }
+                )
+
                 LaunchedEffect(editState.value) {
                     if (editState.value is EditOperationState.Loading) operationTriggered.value = true
                     if (operationTriggered.value && editState.value is EditOperationState.Success) {
                         editDialogOpen.value = null
                     }
-
                 }
-                EditDialog(carId,
+                EditDialog(sightingId,
                     onDismiss = {
                         if (editState.value !is EditOperationState.Loading) {
                             viewModel.clearEditError()
@@ -306,104 +334,109 @@ fun SightingsScreen(repository: SightingsRepository, routesRepository: RoutesRep
                         }
                     },
                     onSave = {
-                        viewModel.editItem(carId, carEditState.value)
-                        onExpandedChangeOrigin(false)
-                        onExpandedChangeDestination(false)
+                        viewModel.editItem(sightingId, sightingEditState.value)
+                        onExpandedChangeRoute(false)
+                        onExpandedChangeStation(false)
                     },
                     onDelete = {
-                        viewModel.deleteItem(carId)
-                        onExpandedChangeOrigin(false)
-                        onExpandedChangeDestination(false)
+                        viewModel.deleteItem(sightingId)
+                        onExpandedChangeRoute(false)
+                        onExpandedChangeStation(false)
                     },
                     editState = editState.value,
                     onClearError = { viewModel.clearEditError() },
                     fields = listOf(
-                        NumberFormField(
-                            "Number",
-                            carEditState.value.number,
-                            {
-                                    carEditState.value = carEditState.value.copy(number = it)
+                        SelectInput(
+                            "Route",
+                            selection = (
+                                    sightingEditState.value.route
+                                            to
+                                            (routeMap[sightingEditState.value.route]?:
+                                            "No such route")) ,
+                            items = routeMap,
+                            onExpandedChange = onExpandedChangeRoute,
+                            expanded = expandedRoute.value,
+                            onChange = {
+                                sightingEditState.value = sightingEditState.value.copy(route = it.first)
+                                onExpandedChangeRoute(false)
                             },
+                            validator = {routeMap[it] != null}
+                        ),
+                        DateFormField(
+                            "Date",
+                            dateValue = sightingEditState.value.date,
+                            onChange = {
+                                sightingEditState.value = sightingEditState.value.copy(date = it)
+                            },
+                            datePickerOpen = openDate.value,
+                            datePickerOpenChange = onOpenDateChange,
 
                         ),
-                        TextFormField(
-                            "Type",
-                            carEditState.value.type,
-                            {
-                                carEditState.value = carEditState.value.copy(type = it)
-                            }
+                        SelectInput(
+                            "Destination",
+                            selection = (
+                                    sightingEditState.value.station
+                                            to
+                                            (stationMap[sightingEditState.value.station]?:
+                                            "No such station")) ,
+                            items = stationMap,
+                            onExpandedChange = onExpandedChangeStation,
+                            expanded = expandedStation.value,
+                            onChange = {
+                                sightingEditState.value = sightingEditState.value.copy(station = it.first)
+                                onExpandedChangeStation(false)
+                            },
+                            validator = {stationMap[it] != null}
                         ),
-                        TextFormField(
-                            "Nick",
-                            carEditState.value.nick?:"",
-                            {
-                                carEditState.value = carEditState.value.copy(nick = it)
+                        SelectInput(
+                            "Add car",
+                            selection = ("" to "Select Car"),
+                            items = carMap,
+                            onExpandedChange = onExpandedChangeCar,
+                            expanded = expandedStation.value,
+                            onChange = {
+                                onAddCar(it.first)
+                                onExpandedChangeStation(false)
                             },
                             validator = {true}
                         ),
-                        TextFormField(
-                            "Departure",
-                            carEditState.value. departure,
-                            {
-                                carEditState.value = carEditState.value.copy(departure = it)
-                            }
-                        ),
-                        TextFormField(
-                            "Arrival",
-                            carEditState.value.arrival,
-                            {
-                                carEditState.value = carEditState.value.copy(arrival = it)
-                            }
-                        ),
-                        SelectInput(
-                            "Origin",
-                            selection = (
-                                    carEditState.value.origin
-                                            to
-                                            (stationMap[carEditState.value.origin]?:
-                                            "No such station")) ,
-                            items = stationMap,
-                            onExpandedChange = onExpandedChangeOrigin,
-                            expanded = expandedOrigin.value,
-                            onChange = {
-                                carEditState.value = carEditState.value.copy(origin = it.first)
-                                onExpandedChangeOrigin(false)
-                            },
-                            validator = {stationMap[it] != null}
-                        ),
-                        TextFormField(
-                            "Origin",
-                            carEditState.value.origin,
-                            {
-                                carEditState.value = carEditState.value.copy(origin = it)
-                            },
-                            validator = {stationMap[it] != null}
-                        ),
-                        SelectInput(
-                            "Destination",
-                            selection = (
-                                    carEditState.value.destination
-                                            to
-                                            (stationMap[carEditState.value.destination]?:
-                                            "No such station")) ,
-                            items = stationMap,
-                            onExpandedChange = onExpandedChangeDestination,
-                            expanded = expandedDestination.value,
-                            onChange = {
-                                carEditState.value = carEditState.value.copy(destination = it.first)
-                                onExpandedChangeDestination(false)
-                            },
-                            validator = {stationMap[it] != null}
-                        ),
-                        TextFormField(
-                            "Destination",
-                            carEditState.value. destination,
-                            {
-                                carEditState.value = carEditState.value.copy(destination = it)
-                            },
-                            validator = {stationMap[it] != null}
-                        ),
+                        object: FormField {
+                            override val label = "Cars"
+                            @Composable
+                            override fun Render(modifier: Modifier) {
+                                LazyColumn(
+                                    state = listState
+                                ) {
+                                    items(
+                                        items = trainComposition,
+                                        key = { car -> car.id }
+                                    ) { car ->
+                                        ReorderableItem(
+                                            reorderableState,
+                                            key = car.id
+                                        ) { isDragging ->
 
+                                            Card(
+                                                elevation = CardDefaults.cardElevation(if (isDragging) 8.dp else 0.dp),
+                                                modifier = Modifier.longPressDraggableHandle()
+                                            ) {
+
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            override val isValid = true
+                        },
+
+                        TextFormField(
+                            "Notes",
+                            sightingEditState.value.notes?:"",
+                            {
+                                sightingEditState.value = sightingEditState.value.copy(notes = it)
+                            },
+                            validator = {true}
+                        )
                     )
                 )
             }
@@ -415,20 +448,18 @@ fun SightingsScreen(repository: SightingsRepository, routesRepository: RoutesRep
                 onSelect = {
                     editDialogOpen.value = it
                 },
-                getId = { it.id ?: it.number},
+                getId = { it.id!! },
                 headlineContent = {
-                    Text("${it.expand!!["origin"]!!.name} - ${it.expand!!["destination"]!!.name}")
+                    Text("${it.date} along ${routeMap[it.route]}")
                 },
                 overlineContent = {
-                    Text("${it.departure} - ${it.arrival}")
+                    Text(it.station)
                 },
                 supportingContent = {
-                    val asd = if (it.nick != null && it.nick != "") {
-                        "(${it.nick} ${it.type} ${it.number})"
-                    } else {
-                        "(${it.type} ${it.number})"
+                     if (it.notes != null && it.notes != "") {
+                        Text(it.notes)
                     }
-                    Text(asd)
+
                 },
             )
         }

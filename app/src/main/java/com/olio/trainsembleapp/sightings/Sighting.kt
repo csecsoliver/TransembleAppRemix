@@ -2,6 +2,7 @@ package com.olio.trainsembleapp.stations
 
 import android.media.Image
 import android.net.Uri
+import io.github.agrevster.pocketbaseKotlin.dsl.query.ExpandRecord
 import io.github.agrevster.pocketbaseKotlin.models.Record
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -19,7 +20,7 @@ data class Sighting(
     val date: String,
     val station: String,
     val cars: List<String>,
-    val notes: String,
+    val notes: String?,
     val image: List<String>,
     val created: String,
     val updated: String,
@@ -33,7 +34,7 @@ data class SightingDto (
     val date: Long?,
     val station: String,
     val cars: List<String>,
-    val notes: String
+    val notes: String?
 )
 
 fun Sighting.toDto() = SightingDto(

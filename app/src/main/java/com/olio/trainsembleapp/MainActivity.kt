@@ -28,6 +28,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.olio.trainsembleapp.cars.CarsScreen
 import com.olio.trainsembleapp.routes.RoutesScreen
+import com.olio.trainsembleapp.sightings.SightingsScreen
 import com.olio.trainsembleapp.stations.StationsScreen
 import com.olio.trainsembleapp.ui.ScreenTab
 import com.olio.trainsembleapp.ui.screenTabs
@@ -51,7 +52,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     floatingActionButton = {
-                        if ((currentTab == ScreenTab.CARS|| currentTab == ScreenTab.STATIONS || currentTab == ScreenTab.ROUTES) && !errorState.value ) {
+                        if ((currentTab == ScreenTab.CARS|| currentTab == ScreenTab.STATIONS || currentTab == ScreenTab.ROUTES || currentTab == ScreenTab.SIGHTINGS) && !errorState.value ) {
 
                             FloatingActionButton(
                                 onClick = {
@@ -163,6 +164,20 @@ class MainActivity : ComponentActivity() {
                                 RoutesScreen(
                                     repository = app.routesRepository,
                                     stationsRepository = app.stationsRepository,
+                                    innerPadding = innerPadding,
+                                    createDialogOpen = createDialogOpen.value,
+                                    onCreateDialogClose = { createDialogOpen.value = false },
+                                    setErrorState = {
+                                        errorState.value = it
+                                    }
+                                )
+                            }
+                            entry<ScreenTab.SIGHTINGS> {
+                                SightingsScreen (
+                                    repository = app.sightingsRepository,
+                                    stationsRepository = app.stationsRepository,
+                                    routesRepository = app.routesRepository,
+                                    carsRepository = app.carsRepository,
                                     innerPadding = innerPadding,
                                     createDialogOpen = createDialogOpen.value,
                                     onCreateDialogClose = { createDialogOpen.value = false },
