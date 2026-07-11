@@ -4,9 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
@@ -22,6 +25,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.Paragraph
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -55,7 +59,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     floatingActionButton = {
-                        if ((currentTab == ScreenTab.CARS|| currentTab == ScreenTab.STATIONS || currentTab == ScreenTab.ROUTES || currentTab == ScreenTab.SIGHTINGS) && !errorState.value ) {
+                        if ((currentTab == ScreenTab.CARS || currentTab == ScreenTab.STATIONS || currentTab == ScreenTab.ROUTES || currentTab == ScreenTab.SIGHTINGS) && !errorState.value) {
 
                             FloatingActionButton(
                                 onClick = {
@@ -105,49 +109,54 @@ class MainActivity : ComponentActivity() {
                         entryProvider = entryProvider {
 
                             entry<ScreenTab.HOME> {
+                                val homeScrollState = rememberScrollState()
+                                Column (
+                                    modifier = Modifier.verticalScroll(homeScrollState).padding(innerPadding),
 
-                                val authState = app.authRepository.isAuthenticated.collectAsStateWithLifecycle()
-                                val auth = authState.value
-
-                                when (auth) {
-                                    is AuthState.Authenticating -> {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.padding(
-                                                innerPadding
-                                            )
-                                        )
-                                    }
-
-                                    is AuthState.Authenticated -> {
-                                        Button(
-                                            onClick = dropUnlessResumed {
-                                                backStack.add(ScreenTab.CARS)
-                                            },
-                                            modifier = Modifier
-                                                .padding(innerPadding)
-                                                .padding(horizontal = 16.dp),
-                                        ) {
-                                            Text("Click to navigate")
-                                        }
-                                    }
-
-                                is AuthState.NotAuthenticated -> {
+                                ) {
                                     Text(
-                                        "not authenticated",
-                                        modifier = Modifier.padding(innerPadding)
+                                        text = "This is a train assembly tracker app. You manage train Cars, Stations and Routes in the database, and record real life combinations of them as Sightings. This project started as a webapp for a school assignment, made together with two of my classmates. After we finished it, I got inspired to make a mobile app out of it. It is currently missing one main feature the webapp had: uploading pictures. But I'm working on that one too."
+                                        , modifier = Modifier.padding(16.dp)
                                     )
-                                }
+                                    Text(
+                                        modifier = Modifier.padding(16.dp),
+                                        text = "There are four functional tabs in the app, all of them display a listing of the specific database tables. You can add records to all of them, edit existing ones, and delete too. There is minimal validation on the form fields, but they are not enforced, and the database might enforce stricter rules. If you don't know, but really want to know them exactly, consult the pb_schema.json document, or import it into a pocketbase instance installed by setup.cjs. (Other versions of pocketbase should work, but no guarantees)"
+                                    )
+                                    Text(
+                                        modifier = Modifier.padding(16.dp),
+                                        text = "Some other interesting stuff: This is written in jetpack compose, which really was a chore at first (and still somewhat is), because I was used to markup languages (wpf xml, html). vagonweb translates to traincarweb, and it has a module that serves an eerily similar purpose to my own app, which is why I have borrowed some images in the form of URL-s from them. They can be perfectly aligned by their bottoms, and look really nice and realistic. Props to them: https://www.vagonweb.cz"
+                                    )
+                                    val authState =
+                                        app.authRepository.isAuthenticated.collectAsStateWithLifecycle()
+                                    when (val auth = authState.value) {
+                                        is AuthState.Authenticating -> {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.padding(16.dp)
+                                            )
+                                        }
 
-                                is AuthState.Error -> {
-                                    Column(modifier = Modifier.padding(innerPadding)) {
-                                        Text("Authentication error: ${auth.reason}")
-                                        Button(onClick = dropUnlessResumed { app.authRepository.retry() }) {
-                                            Text("Retry")
+                                        is AuthState.Authenticated -> {
+
+                                        }
+
+                                        is AuthState.NotAuthenticated -> {
+                                            Text(
+                                                "not authenticated",
+                                                modifier = Modifier.padding(innerPadding)
+                                            )
+                                        }
+
+                                        is AuthState.Error -> {
+                                            Column(modifier = Modifier.padding(innerPadding)) {
+                                                Text("Authentication error: ${auth.reason}")
+                                                Button(onClick = dropUnlessResumed { app.authRepository.retry() }) {
+                                                    Text("Retry")
+                                                }
+                                            }
                                         }
                                     }
-                                }
-                                }
 
+                                }
                             }
 
                             entry<ScreenTab.CARS> {
@@ -186,7 +195,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             entry<ScreenTab.SIGHTINGS> {
-                                SightingsScreen (
+                                SightingsScreen(
                                     repository = app.sightingsRepository,
                                     stationsRepository = app.stationsRepository,
                                     routesRepository = app.routesRepository,
