@@ -3,9 +3,12 @@ package com.olio.trainsembleapp.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Colors
 import androidx.compose.material3.Card
 import androidx.compose.material3.Button
@@ -20,9 +23,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.olio.trainsembleapp.a_generic.EditOperationState
 
 @Composable
@@ -39,8 +44,14 @@ fun EditDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
+        val cardScrollState = rememberScrollState()
         Card (
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .fillMaxHeight(0.9f)
+                .verticalScroll(cardScrollState)
         ) {
             Column (
                 modifier = Modifier.padding(20.dp),
@@ -51,7 +62,7 @@ fun EditDialog(
                     style = MaterialTheme.typography.headlineSmall
                 )
                 for (i in fields) {
-                    i.Render()
+                    i.Render(Modifier.fillMaxWidth())
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),

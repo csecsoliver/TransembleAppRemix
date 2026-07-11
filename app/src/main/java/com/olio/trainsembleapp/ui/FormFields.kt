@@ -2,6 +2,7 @@ package com.olio.trainsembleapp.ui
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -20,7 +21,9 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.input.KeyboardType
 import coil.compose.AsyncImage
@@ -50,7 +53,7 @@ class TextFormField(
             onValueChange = onChange,
             label = { Text(label) },
             isError = !isValid,
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier
         )
     }
 }
@@ -71,7 +74,7 @@ class TextFormFieldWithImage(
             onValueChange = onChange,
             label = { Text(label) },
             isError = !isValid,
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier
         )
         AsyncImage(model = textValue, contentDescription = textValue)
     }
@@ -93,7 +96,7 @@ class NumberFormField(
             onValueChange = onChange,
             label = { Text(label) },
             isError = !isValid,
-            modifier = modifier.fillMaxWidth(),
+            modifier = modifier,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
     }
@@ -116,7 +119,7 @@ class SelectInput(
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = onExpandedChange,
-            modifier = modifier.fillMaxWidth(),
+            modifier = modifier,
         ) {
             /*OutlinedTextField(
                 value = selection.second,
@@ -126,7 +129,9 @@ class SelectInput(
                 modifier = modifier.fillMaxWidth()
             )*/
             OutlinedTextField(
-                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true),
+                modifier = Modifier
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true)
+                    .fillMaxWidth(),
                 readOnly = true,
                 value = selection.second,
                 onValueChange = {},
@@ -194,7 +199,10 @@ class DateFormField(
             }
         }
 
-        Row() {
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
             OutlinedTextField(
                 readOnly = true,
@@ -202,6 +210,7 @@ class DateFormField(
                 onValueChange = {},
                 label = { Text(label) },
                 isError = !isValid,
+                modifier = Modifier.weight(1f)
             )
             Button(onClick = {datePickerOpenChange(true) }) {
                 Text("Pick")
