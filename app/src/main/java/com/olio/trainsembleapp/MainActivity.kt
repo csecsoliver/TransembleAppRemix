@@ -25,8 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.olio.trainsembleapp.a_generic.SightingsViewModel
 import com.olio.trainsembleapp.cars.CarsScreen
 import com.olio.trainsembleapp.routes.RoutesScreen
 import com.olio.trainsembleapp.sightings.SightingsScreen

@@ -15,12 +15,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.olio.trainsembleapp.a_generic.CarsViewModel
 import com.olio.trainsembleapp.a_generic.EditOperationState
 import com.olio.trainsembleapp.a_generic.GenericList
+import com.olio.trainsembleapp.a_generic.GenericReloadButtonUltraProMaxPlus
 import com.olio.trainsembleapp.a_generic.UiState
 import com.olio.trainsembleapp.a_generic.isError
 import com.olio.trainsembleapp.ui.EditDialog
@@ -28,7 +30,13 @@ import com.olio.trainsembleapp.ui.TextFormField
 import com.olio.trainsembleapp.ui.TextFormFieldWithImage
 
 @Composable
-fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDialogOpen: Boolean, onCreateDialogClose: ()->Unit, setErrorState: (Boolean)->Unit) {
+fun CarsScreen(
+    repository: CarsRepository,
+    innerPadding: PaddingValues,
+    createDialogOpen: Boolean,
+    onCreateDialogClose: () -> Unit,
+    setErrorState: (Boolean) -> Unit
+) {
     val viewModel = viewModel { CarsViewModel(repository) }
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val editState = viewModel.editState.collectAsStateWithLifecycle()
@@ -39,7 +47,7 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
                 CircularProgressIndicator(modifier = Modifier.padding(innerPadding))
-                Text(state.message?:"Loading...")
+                Text(state.message ?: "Loading...")
             }
         }
 
@@ -55,16 +63,21 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
         is UiState.Success -> {
             val editDialogOpen = remember { mutableStateOf<Car?>(null) }
             if (createDialogOpen) {
-                val carCreateState = remember { mutableStateOf(CarDto(
-                    "",
-                    "",
-                    "",
-                    "",
-                    ""
-                )) }
+                val carCreateState = remember {
+                    mutableStateOf(
+                        CarDto(
+                            "",
+                            "",
+                            "",
+                            "",
+                            ""
+                        )
+                    )
+                }
                 val operationTriggered = remember { mutableStateOf(false) }
                 LaunchedEffect(editState.value) {
-                    if (editState.value is EditOperationState.Loading) operationTriggered.value = true
+                    if (editState.value is EditOperationState.Loading) operationTriggered.value =
+                        true
                     if (operationTriggered.value && editState.value is EditOperationState.Success) {
                         onCreateDialogClose()
                     }
@@ -107,11 +120,11 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
                         ),
                         TextFormField(
                             "Nickname",
-                            carCreateState.value.nick?:"",
+                            carCreateState.value.nick ?: "",
                             {
                                 carCreateState.value = carCreateState.value.copy(nick = it)
                             },
-                            validator = {true}
+                            validator = { true }
 
                         ),
                         TextFormFieldWithImage(
@@ -125,15 +138,18 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
                 )
             } else if (editDialogOpen.value != null) {
                 val carId = remember { editDialogOpen.value!!.id!! }
-                val carEditState = remember { mutableStateOf<CarDto>(editDialogOpen.value!!.toDto()) }
+                val carEditState =
+                    remember { mutableStateOf<CarDto>(editDialogOpen.value!!.toDto()) }
                 val operationTriggered = remember { mutableStateOf(false) }
                 LaunchedEffect(editState.value) {
-                    if (editState.value is EditOperationState.Loading) operationTriggered.value = true
+                    if (editState.value is EditOperationState.Loading) operationTriggered.value =
+                        true
                     if (operationTriggered.value && editState.value is EditOperationState.Success) {
                         editDialogOpen.value = null
                     }
                 }
-                EditDialog(carId,
+                EditDialog(
+                    carId,
                     onDismiss = {
                         if (editState.value !is EditOperationState.Loading) {
                             viewModel.clearEditError()
@@ -172,11 +188,11 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
                         ),
                         TextFormField(
                             "Nickname",
-                            carEditState.value.nick?:"",
+                            carEditState.value.nick ?: "",
                             {
                                 carEditState.value = carEditState.value.copy(nick = it)
                             },
-                            validator = {true}
+                            validator = { true }
                         ),
                         TextFormFieldWithImage(
                             "vagonweb",
@@ -189,24 +205,27 @@ fun CarsScreen(repository: CarsRepository, innerPadding: PaddingValues, createDi
                 )
             }
 
+            Column(modifier = Modifier.padding(innerPadding)) {
 
-            GenericList(
-                state.data,
-                innerPadding,
-                onSelect = {
-                    editDialogOpen.value = it
-                },
-                getId = { it.id?:it.uic },
-                headlineContent = {
-                    Text(it.uic)
-                },
-                overlineContent = {
-                    Text("${  it.type } ${it.nick}" )
-                },
-                supportingContent = {
-                    AsyncImage(model = it.vagonweb, contentDescription = it.vagonweb)
-                },
-            )
+                GenericReloadButtonUltraProMaxPlus(viewModel)
+                GenericList(
+                    state.data,
+                    PaddingValues(0.dp),
+                    onSelect = {
+                        editDialogOpen.value = it
+                    },
+                    getId = { it.id ?: it.uic },
+                    headlineContent = {
+                        Text(it.uic)
+                    },
+                    overlineContent = {
+                        Text("${it.type} ${it.nick}")
+                    },
+                    supportingContent = {
+                        AsyncImage(model = it.vagonweb, contentDescription = it.vagonweb)
+                    },
+                )
+            }
         }
     }
 }

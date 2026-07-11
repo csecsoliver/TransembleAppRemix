@@ -45,6 +45,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.olio.trainsembleapp.a_generic.EditOperationState
 import com.olio.trainsembleapp.a_generic.GenericList
+import com.olio.trainsembleapp.a_generic.GenericReloadButtonUltraProMaxPlus
 import com.olio.trainsembleapp.a_generic.SightingsViewModel
 import com.olio.trainsembleapp.a_generic.UiState
 import com.olio.trainsembleapp.a_generic.isError
@@ -119,7 +120,11 @@ fun SightingsScreen(
                     ?.data
                     ?.sortedBy { "${it.nick ?: ""}${it.type}${it.number}" }
                     ?.associate {
-                        it.id!! to "${it.nick ?: ""} ${it.type} ${it.number} ${it.expand?.get("origin")?.name ?: "Unknown"} - ${it.expand?.get("destination")?.name ?: "Unknown"}"
+                        it.id!! to "${it.nick ?: ""} ${it.type} ${it.number} ${it.expand?.get("origin")?.name ?: "Unknown"} - ${
+                            it.expand?.get(
+                                "destination"
+                            )?.name ?: "Unknown"
+                        }"
                     }
                     ?: emptyMap()
             }
@@ -312,37 +317,37 @@ fun SightingsScreen(
                                             reorderableState,
                                             key = car.id
                                         ) { isDragging ->
-                                                Card(
-                                                    elevation = CardDefaults.cardElevation(if (isDragging) 8.dp else 0.dp),
-                                                    modifier = Modifier.longPressDraggableHandle()
+                                            Card(
+                                                elevation = CardDefaults.cardElevation(if (isDragging) 8.dp else 0.dp),
+                                                modifier = Modifier.longPressDraggableHandle()
+                                            ) {
+                                                Row(
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    modifier = Modifier.fillMaxWidth()
                                                 ) {
-                                                    Row(
-                                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                                        modifier = Modifier.fillMaxWidth()
-                                                    ) {
-                                                        Column() {
+                                                    Column() {
 
-                                                            Text("${carMap[car.type]}")
-                                                            AsyncImage(
-                                                                model = carImageMap[car.type],
-                                                                contentDescription = carImageMap[car.type]
-                                                            )
-                                                        }
-                                                        TextButton(
-                                                            onClick = {onCarRemove(car.id)},
-                                                            colors = ButtonDefaults.textButtonColors(
-                                                                contentColor = MaterialTheme.colorScheme.error
-                                                            ),
+                                                        Text("${carMap[car.type]}")
+                                                        AsyncImage(
+                                                            model = carImageMap[car.type],
+                                                            contentDescription = carImageMap[car.type]
+                                                        )
+                                                    }
+                                                    TextButton(
+                                                        onClick = { onCarRemove(car.id) },
+                                                        colors = ButtonDefaults.textButtonColors(
+                                                            contentColor = MaterialTheme.colorScheme.error
+                                                        ),
 
                                                         ) {
-                                                            Icon(
-                                                                imageVector = Icons.Default.Delete,
-                                                                contentDescription = "Remove car"
-                                                            )
-                                                        }
+                                                        Icon(
+                                                            imageVector = Icons.Default.Delete,
+                                                            contentDescription = "Remove car"
+                                                        )
                                                     }
-
                                                 }
+
+                                            }
 
                                         }
                                     }
@@ -535,7 +540,7 @@ fun SightingsScreen(
                                                             contentColor = MaterialTheme.colorScheme.error
                                                         ),
 
-                                                    ) {
+                                                        ) {
                                                         Icon(
                                                             imageVector = Icons.Default.Delete,
                                                             contentDescription = "Remove car"
@@ -563,41 +568,43 @@ fun SightingsScreen(
                     )
                 )
             }
+            Column(modifier = Modifier.padding(innerPadding)) {
 
-
-            GenericList(
-                state.data,
-                innerPadding,
-                onSelect = {
-                    editDialogOpen.value = it
-                },
-                getId = { it.id!! },
-                headlineContent = {
-                    Text("${stationMap[it.station]} along ${routeMap[it.route]}")
-                },
-                overlineContent = {
-                    Text(it.date)
-                },
-                supportingContent = {
-                    Column {
-                        if (it.notes != null && it.notes != "") {
-                            Text(it.notes)
-                        }
-                        val rowScrollState = rememberScrollState()
-                        Row(
-                            modifier = Modifier.horizontalScroll(rowScrollState),
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            for (item in it.cars) {
-                                AsyncImage(
-                                    model = carImageMap[item],
-                                    contentDescription = carImageMap[item]
-                                )
+                GenericReloadButtonUltraProMaxPlus(viewModel)
+                GenericList(
+                    state.data,
+                    PaddingValues(0.dp),
+                    onSelect = {
+                        editDialogOpen.value = it
+                    },
+                    getId = { it.id!! },
+                    headlineContent = {
+                        Text("${stationMap[it.station]} along ${routeMap[it.route]}")
+                    },
+                    overlineContent = {
+                        Text(it.date)
+                    },
+                    supportingContent = {
+                        Column {
+                            if (it.notes != null && it.notes != "") {
+                                Text(it.notes)
+                            }
+                            val rowScrollState = rememberScrollState()
+                            Row(
+                                modifier = Modifier.horizontalScroll(rowScrollState),
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                for (item in it.cars) {
+                                    AsyncImage(
+                                        model = carImageMap[item],
+                                        contentDescription = carImageMap[item]
+                                    )
+                                }
                             }
                         }
-                    }
-                },
-            )
+                    },
+                )
+            }
         }
     }
 }
