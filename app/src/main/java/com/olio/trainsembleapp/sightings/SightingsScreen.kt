@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,11 +52,11 @@ import com.olio.trainsembleapp.cars.Car
 import com.olio.trainsembleapp.cars.CarsRepository
 import com.olio.trainsembleapp.routes.Route
 import com.olio.trainsembleapp.routes.RoutesRepository
-import com.olio.trainsembleapp.stations.Sighting
-import com.olio.trainsembleapp.stations.SightingDto
+import com.olio.trainsembleapp.sightings.Sighting
+import com.olio.trainsembleapp.sightings.SightingDto
+import com.olio.trainsembleapp.sightings.toDto
 import com.olio.trainsembleapp.stations.Station
 import com.olio.trainsembleapp.stations.StationsRepository
-import com.olio.trainsembleapp.stations.toDto
 import com.olio.trainsembleapp.ui.DateFormField
 import com.olio.trainsembleapp.ui.EditDialog
 import com.olio.trainsembleapp.ui.FormField
@@ -87,7 +88,8 @@ fun SightingsScreen(
     }
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val editState = viewModel.editState.collectAsStateWithLifecycle()
-    setErrorState(uiState.value.isError)
+    LaunchedEffect(Unit) { viewModel.loadItems() }
+    SideEffect { setErrorState(uiState.value.isError) }
     when (val state = uiState.value) {
         is UiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -98,10 +100,14 @@ fun SightingsScreen(
         }
 
         is UiState.Error -> {
-            Text(
-                text = "Error: ${state.exception.message}",
-                modifier = Modifier.padding(innerPadding)
-            )
+            Column(modifier = Modifier.padding(innerPadding)) {
+                Text(
+                    text = "Error: ${state.exception.message ?: "Unknown error"}"
+                )
+                Button(onClick = { viewModel.loadItems(true) }) {
+                    Text("Retry")
+                }
+            }
         }
 
         is UiState.Success -> {
@@ -109,28 +115,36 @@ fun SightingsScreen(
             val editDialogOpen = remember { mutableStateOf<Sighting?>(null) }
 
             val routeMap = remember {
-                val asd = (viewModel.routesUiState.value as UiState.Success<Route>)
-                asd.data.sortedBy { "${it.nick ?: ""}${it.type}${it.number}" }.associate {
-                    it.id!! to "${it.nick ?: ""} ${it.type} ${it.number} ${it.expand!!["origin"]!!.name} - ${it.expand!!["destination"]!!.name}"
-                }
+                (viewModel.routesUiState.value as? UiState.Success)
+                    ?.data
+                    ?.sortedBy { "${it.nick ?: ""}${it.type}${it.number}" }
+                    ?.associate {
+                        it.id!! to "${it.nick ?: ""} ${it.type} ${it.number} ${it.expand?.get("origin")?.name ?: "Unknown"} - ${it.expand?.get("destination")?.name ?: "Unknown"}"
+                    }
+                    ?: emptyMap()
             }
             val stationMap = remember {
-                val asd = (viewModel.stationsUiState.value as UiState.Success<Station>)
-                asd.data.sortedBy { it.name }.associate {
-                    it.id!! to it.name
-                }
+                (viewModel.stationsUiState.value as? UiState.Success)
+                    ?.data
+                    ?.sortedBy { it.name }
+                    ?.associate { it.id!! to it.name }
+                    ?: emptyMap()
             }
             val carMap = remember {
-                val asd = (viewModel.carsUiState.value as UiState.Success<Car>)
-                asd.data.sortedBy { "${it.agency} ${it.type} ${it.uic}. ${it.nick}" }.associate {
-                    it.id!! to "${it.agency} ${it.type} ${it.uic}. ${it.nick}"
-                }
+                (viewModel.carsUiState.value as? UiState.Success)
+                    ?.data
+                    ?.sortedBy { "${it.agency} ${it.type} ${it.uic}. ${it.nick}" }
+                    ?.associate {
+                        it.id!! to "${it.agency} ${it.type} ${it.uic}. ${it.nick}"
+                    }
+                    ?: emptyMap()
             }
             val carImageMap = remember {
-                val asd = (viewModel.carsUiState.value as UiState.Success<Car>)
-                asd.data.sortedBy { "${it.agency} ${it.type} ${it.uic}. ${it.nick}" }.associate {
-                    it.id!! to it.vagonweb
-                }
+                (viewModel.carsUiState.value as? UiState.Success)
+                    ?.data
+                    ?.sortedBy { "${it.agency} ${it.type} ${it.uic}. ${it.nick}" }
+                    ?.associate { it.id!! to it.vagonweb }
+                    ?: emptyMap()
             }
 
             val configuration = LocalConfiguration.current

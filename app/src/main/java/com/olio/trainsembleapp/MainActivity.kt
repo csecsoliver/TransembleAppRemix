@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -104,8 +105,9 @@ class MainActivity : ComponentActivity() {
                             entry<ScreenTab.HOME> {
 
                                 val authState = app.authRepository.isAuthenticated.collectAsStateWithLifecycle()
+                                val auth = authState.value
 
-                                when (authState.value) {
+                                when (auth) {
                                     is AuthState.Authenticating -> {
                                         CircularProgressIndicator(
                                             modifier = Modifier.padding(
@@ -127,12 +129,21 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
 
-                                    is AuthState.NotAuthenticated -> {
-                                        Text(
-                                            "not authenticated",
-                                            modifier = Modifier.padding(innerPadding)
-                                        )
+                                is AuthState.NotAuthenticated -> {
+                                    Text(
+                                        "not authenticated",
+                                        modifier = Modifier.padding(innerPadding)
+                                    )
+                                }
+
+                                is AuthState.Error -> {
+                                    Column(modifier = Modifier.padding(innerPadding)) {
+                                        Text("Authentication error: ${auth.reason}")
+                                        Button(onClick = dropUnlessResumed { app.authRepository.retry() }) {
+                                            Text("Retry")
+                                        }
                                     }
+                                }
                                 }
 
                             }

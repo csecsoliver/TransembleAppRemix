@@ -3,8 +3,8 @@ package com.olio.trainsembleapp.sightings
 import com.olio.trainsembleapp.AuthRepository
 import com.olio.trainsembleapp.AuthState
 import com.olio.trainsembleapp.a_generic.GenericRepository
-import com.olio.trainsembleapp.stations.Sighting
-import com.olio.trainsembleapp.stations.SightingDto
+import com.olio.trainsembleapp.sightings.Sighting
+import com.olio.trainsembleapp.sightings.SightingDto
 import io.github.agrevster.pocketbaseKotlin.PocketbaseClient
 import kotlinx.serialization.json.Json
 

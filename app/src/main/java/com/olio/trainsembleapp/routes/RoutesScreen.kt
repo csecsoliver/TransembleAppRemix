@@ -1,13 +1,16 @@
 package com.olio.trainsembleapp.routes
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,7 +35,8 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
     val viewModel = viewModel { RoutesViewModel(repository, stationsRepository) }
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val editState = viewModel.editState.collectAsStateWithLifecycle()
-    setErrorState(uiState.value.isError)
+    LaunchedEffect(Unit) { viewModel.loadItems() }
+    SideEffect { setErrorState(uiState.value.isError) }
     when (val state = uiState.value) {
         is UiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -43,10 +47,14 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
         }
 
         is UiState.Error -> {
-            Text(
-                text = "Error: ${state.exception.message}",
-                modifier = Modifier.padding(innerPadding)
-            )
+            Column(modifier = Modifier.padding(innerPadding)) {
+                Text(
+                    text = "Error: ${state.exception.message ?: "Unknown error"}"
+                )
+                Button(onClick = { viewModel.loadItems(true) }) {
+                    Text("Retry")
+                }
+            }
         }
 
         is UiState.Success -> {
@@ -64,10 +72,11 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                 )) }
                 val operationTriggered = remember { mutableStateOf(false) }
                 val stationMap = remember {
-                    val asd = (viewModel.stationsUiState.value as UiState.Success<Station>)
-                    asd.data.sortedBy { it.name }.associate {
-                        it.id!! to it.name
-                    }
+                    (viewModel.stationsUiState.value as? UiState.Success)
+                        ?.data
+                        ?.sortedBy { it.name }
+                        ?.associate { it.id!! to it.name }
+                        ?: emptyMap()
                 }
                 val expandedOrigin = remember { mutableStateOf(false) }
                 val onExpandedChangeOrigin: (Boolean) -> Unit = {
@@ -193,10 +202,11 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                 val carEditState = remember { mutableStateOf(editDialogOpen.value!!.toUi())}
                 val operationTriggered = remember { mutableStateOf(false) }
                 val stationMap = remember {
-                    val asd = (viewModel.stationsUiState.value as UiState.Success<Station>)
-                    asd.data.sortedBy { it.name }.associate {
-                        it.id!! to it.name
-                    }
+                    (viewModel.stationsUiState.value as? UiState.Success)
+                        ?.data
+                        ?.sortedBy { it.name }
+                        ?.associate { it.id!! to it.name }
+                        ?: emptyMap()
                 }
                 val expandedOrigin = remember { mutableStateOf(false) }
                 val onExpandedChangeOrigin: (Boolean) -> Unit = {
@@ -332,7 +342,9 @@ fun RoutesScreen(repository: RoutesRepository,stationsRepository: StationsReposi
                 },
                 getId = { it.id ?: it.number},
                 headlineContent = {
-                    Text("${it.expand!!["origin"]!!.name} - ${it.expand!!["destination"]!!.name}")
+                    val originName = it.expand?.get("origin")?.name ?: "Unknown"
+                    val destinationName = it.expand?.get("destination")?.name ?: "Unknown"
+                    Text("$originName - $destinationName")
                 },
                 overlineContent = {
                     Text("${it.departure} - ${it.arrival}")

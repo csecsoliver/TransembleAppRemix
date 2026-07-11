@@ -1,4 +1,4 @@
-package com.olio.trainsembleapp.stations
+package com.olio.trainsembleapp.sightings
 
 import android.media.Image
 import android.net.Uri

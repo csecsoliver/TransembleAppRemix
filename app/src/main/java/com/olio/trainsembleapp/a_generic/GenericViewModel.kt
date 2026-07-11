@@ -9,8 +9,8 @@ import com.olio.trainsembleapp.routes.Route
 import com.olio.trainsembleapp.routes.RouteUiType
 import com.olio.trainsembleapp.routes.RoutesRepository
 import com.olio.trainsembleapp.sightings.SightingsRepository
-import com.olio.trainsembleapp.stations.Sighting
-import com.olio.trainsembleapp.stations.SightingDto
+import com.olio.trainsembleapp.sightings.Sighting
+import com.olio.trainsembleapp.sightings.SightingDto
 import com.olio.trainsembleapp.stations.Station
 import com.olio.trainsembleapp.stations.StationDto
 import com.olio.trainsembleapp.stations.StationsRepository
@@ -39,6 +39,7 @@ class RoutesViewModel(repository: RoutesRepository,  private val stationsReposit
                 _uiState.value = UiState.Error(e)
                 _items.value = emptyList()
                 _stationItems.value = emptyList()
+                _StationsUiState.value = UiState.Error(e)
             }
         }
     }
@@ -78,6 +79,10 @@ class SightingsViewModel(repository: SightingsRepository, private val routesRepo
                 _items.value = emptyList()
                 _stationItems.value = emptyList()
                 _routesItems.value = emptyList()
+                _carsItems.value = emptyList()
+                _StationsUiState.value = UiState.Error(e)
+                _RoutesUiState.value = UiState.Error(e)
+                _CarsUiState.value = UiState.Error(e)
             }
         }
     }
@@ -94,10 +99,6 @@ open class GenericViewModel<T, TDto>(
 
     private val _editState = MutableStateFlow<EditOperationState>(EditOperationState.Idle)
     val editState = _editState.asStateFlow()
-
-    init {
-        loadItems()
-    }
 
      open fun loadItems(reload: Boolean = false) {
         viewModelScope.launch {

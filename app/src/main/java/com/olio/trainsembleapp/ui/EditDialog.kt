@@ -86,7 +86,7 @@ fun EditDialog(
                     }
                     Button(
                         onClick = onSave,
-                        enabled = !isLoading
+                        enabled = !isLoading && fields.all { it.isValid }
                     ) {
                         Text("Save")
                     }
@@ -120,7 +120,7 @@ fun EditDialog(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Error: ${editState.exception.message}",
+                            text = "Error: ${editState.exception.message ?: "Unknown error"}",
                             color = MaterialTheme.colorScheme.error
                         )
                         Button(onClick = onClearError) {

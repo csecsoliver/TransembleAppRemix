@@ -1,13 +1,16 @@
 package com.olio.trainsembleapp.stations
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,7 +30,8 @@ fun StationsScreen(repository: StationsRepository, innerPadding: PaddingValues, 
     val viewModel = viewModel { StationsViewModel(repository) }
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val editState = viewModel.editState.collectAsStateWithLifecycle()
-    setErrorState(uiState.value.isError)
+    LaunchedEffect(Unit) { viewModel.loadItems() }
+    SideEffect { setErrorState(uiState.value.isError) }
     when (val state = uiState.value) {
         is UiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -38,10 +42,14 @@ fun StationsScreen(repository: StationsRepository, innerPadding: PaddingValues, 
         }
 
         is UiState.Error -> {
-            Text(
-                text = "Error: ${state.exception.message}",
-                modifier = Modifier.padding(innerPadding)
-            )
+            Column(modifier = Modifier.padding(innerPadding)) {
+                Text(
+                    text = "Error: ${state.exception.message ?: "Unknown error"}"
+                )
+                Button(onClick = { viewModel.loadItems(true) }) {
+                    Text("Retry")
+                }
+            }
         }
 
         is UiState.Success -> {
