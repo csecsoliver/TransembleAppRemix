@@ -8,3 +8,6 @@ There are four functional tabs in the app, all of them display a listing of the 
 
 ## Some other interesting stuff
 This is written in jetpack compose, which really was a chore at first (and still somewhat is), because I was used to markup languages (wpf xml, html). vagonweb translates to traincarweb, and it has a module that serves an eerily similar purpose to my own app, which is why I have borrowed some images in the form of URL-s from them. They can be perfectly aligned by their bottoms, and look really nice and realistic. Props to them: https://www.vagonweb.cz
+
+## Link to my GitHub account
+https://github.com/csecsoliver
