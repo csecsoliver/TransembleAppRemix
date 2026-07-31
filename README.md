@@ -11,3 +11,12 @@ This is written in jetpack compose, which really was a chore at first (and still
 
 ## Link to my GitHub account
 https://github.com/csecsoliver
+
+## I also have a few oversights in it I cannot fix now
+- The form label for the Station create form is wrong
+- The field label "Destination" in the Sighting form is supposed to be "Station"
+- You have to reload the pages after doing edits in the other pages to update the form's dropdowns
+- I have left the raw id exposed sometimes, but it does not affect operation. Wrong ids are handled accordingly.
+- The date in the list of sightings is exposed as a unix timestamp for entries created in the app. I am not sure why.
+
+Please excuse these 🙏
