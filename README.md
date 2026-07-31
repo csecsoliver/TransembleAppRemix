@@ -13,7 +13,7 @@ This is written in jetpack compose, which really was a chore at first (and still
 https://github.com/csecsoliver
 
 ## I also have a few oversights in it I cannot fix now
-- The form label for the Station create form is wrong
+- The form labels for the create forms are wrong for Stations and Routes
 - The field label "Destination" in the Sighting form is supposed to be "Station"
 - You have to reload the pages after doing edits in the other pages to update the form's dropdowns
 - I have left the raw id exposed sometimes, but it does not affect operation. Wrong ids are handled accordingly.
