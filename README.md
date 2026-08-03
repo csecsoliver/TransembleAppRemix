@@ -1,5 +1,7 @@
 # TrainsembleApp
 Download: https://git.sr.ht/~csoliver/TrainsembleApp/refs (choose a version, click on the version number. if there is an apk, that's for you)
+Run online: https://appetize.io/app/b_qmafmdvwank72zihrnxotdac4i
+
 ## Intro
 This is a train assembly tracker app. You manage train Cars, Stations and Routes in the database, and record real life combinations of them as Sightings. This project started as a webapp for a school assignment, made together with two of my classmates. After we finished it, I got inspired to make a mobile app out of it. It is currently missing one main feature the webapp had: uploading pictures. But I'm working on that one too.
 
